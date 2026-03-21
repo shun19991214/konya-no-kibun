@@ -37,6 +37,7 @@ function ResultContent() {
   const [error, setError] = useState<string | null>(null);
   const [showRestaurants, setShowRestaurants] = useState(false);
   const [ready, setReady] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   const scores: AxisScores = {
     heavyLight: Number(searchParams.get("hl")) || 0,
@@ -75,6 +76,7 @@ function ResultContent() {
   const searchRestaurants = useCallback(
     async (lat: number, lng: number) => {
       if (!selectedGenre) return;
+      setUserLocation({ lat, lng });
       setIsLoading(true);
       setError(null);
       setShowRestaurants(true);
@@ -264,6 +266,7 @@ function ResultContent() {
             restaurants={restaurants}
             isLoading={isLoading}
             error={error}
+            userLocation={userLocation}
           />
         )}
 

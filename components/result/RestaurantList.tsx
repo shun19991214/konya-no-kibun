@@ -8,12 +8,14 @@ interface RestaurantListProps {
   restaurants: Restaurant[];
   isLoading: boolean;
   error?: string | null;
+  userLocation?: { lat: number; lng: number } | null;
 }
 
 export function RestaurantList({
   restaurants,
   isLoading,
   error,
+  userLocation,
 }: RestaurantListProps) {
   if (isLoading) {
     return (
@@ -70,6 +72,7 @@ export function RestaurantList({
             key={restaurant.id}
             restaurant={restaurant}
             index={i}
+            userLocation={userLocation}
           />
         ))}
       </div>

@@ -1,20 +1,54 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { MapPin, Clock, ExternalLink } from "lucide-react";
+import { MapPin, Clock, ExternalLink, Navigation } from "lucide-react";
 import type { Restaurant } from "@/types";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
   index: number;
+  userLocation?: { lat: number; lng: number } | null;
 }
 
-export function RestaurantCard({ restaurant, index }: RestaurantCardProps) {
+function calcDistance(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number
+): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function formatDistance(km: number): string {
+  if (km < 1) return `${Math.round(km * 1000)}m`;
+  return `${km.toFixed(1)}km`;
+}
+
+export function RestaurantCard({ restaurant, index, userLocation }: RestaurantCardProps) {
   const photoUrl =
     restaurant.photo.pc.m ||
     restaurant.photo.pc.l ||
     restaurant.photo.mobile.l ||
     "";
+
+  const distance =
+    userLocation && restaurant.lat && restaurant.lng
+      ? calcDistance(
+          userLocation.lat,
+          userLocation.lng,
+          restaurant.lat,
+          restaurant.lng
+        )
+      : null;
 
   return (
     <motion.a
@@ -37,6 +71,12 @@ export function RestaurantCard({ restaurant, index }: RestaurantCardProps) {
           <span className="absolute bottom-1 right-1 text-[8px] text-white/60 bg-black/30 px-1.5 py-0.5 rounded">
             画像提供：ホットペッパー グルメ
           </span>
+          {distance !== null && (
+            <span className="absolute top-2 left-2 flex items-center gap-1 text-[11px] font-bold text-white bg-black/50 backdrop-blur-sm px-2 py-1 rounded-lg">
+              <Navigation size={10} />
+              {formatDistance(distance)}
+            </span>
+          )}
         </div>
       )}
 
@@ -45,10 +85,18 @@ export function RestaurantCard({ restaurant, index }: RestaurantCardProps) {
           <h3 className="font-bold text-[#3d2e1f] text-[15px] leading-snug">
             {restaurant.name}
           </h3>
-          <ExternalLink
-            size={14}
-            className="flex-shrink-0 text-[#8B6F61]/30 group-hover:text-[#FF6B35] transition-colors mt-0.5"
-          />
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {distance !== null && !photoUrl && (
+              <span className="flex items-center gap-1 text-[10px] font-bold text-[#FF6B35]">
+                <Navigation size={9} />
+                {formatDistance(distance)}
+              </span>
+            )}
+            <ExternalLink
+              size={14}
+              className="text-[#8B6F61]/30 group-hover:text-[#FF6B35] transition-colors mt-0.5"
+            />
+          </div>
         </div>
 
         {restaurant.catchPhrase && (

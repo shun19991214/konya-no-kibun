@@ -14,6 +14,8 @@ interface HotPepperShop {
   name: string;
   address: string;
   station_name?: string;
+  lat?: number;
+  lng?: number;
   budget?: { name?: string; average?: string };
   photo?: {
     pc?: { l?: string; m?: string; s?: string };
@@ -32,6 +34,8 @@ function normalizeShop(shop: HotPepperShop) {
     name: shop.name,
     address: shop.address,
     stationName: shop.station_name || "",
+    lat: shop.lat || 0,
+    lng: shop.lng || 0,
     budget: shop.budget?.name || "",
     budgetAverage: shop.budget?.average || "",
     photo: {

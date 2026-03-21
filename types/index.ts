@@ -66,6 +66,8 @@ export interface Restaurant {
   name: string;
   address: string;
   stationName: string;
+  lat: number;
+  lng: number;
   budget: string;
   budgetAverage: string;
   photo: {

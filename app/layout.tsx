@@ -40,13 +40,13 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&family=Zen+Maru+Gothic:wght@500;700;900&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen flex flex-col bg-background text-accent">
+      <body className="min-h-screen flex flex-col">
         <div className="flex-1">{children}</div>
-        <footer className="py-6 text-center text-sm text-accent-light/60">
+        <footer className="py-6 text-center text-sm text-[#8B6F61]/40 bg-[#FFF8F0]">
           <p>&copy; 2026 こんやのきぶん</p>
         </footer>
       </body>

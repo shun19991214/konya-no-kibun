@@ -40,14 +40,20 @@ export default function QuizPage() {
 
   if (isComplete || !currentQuestion) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-background">
+      <main className="min-h-screen flex items-center justify-center bg-[#FFF8F0]">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center"
         >
-          <div className="text-4xl mb-4 animate-float">🍽️</div>
-          <p className="text-accent-light font-medium">
+          <motion.div
+            animate={{ rotate: [0, 10, -10, 0] }}
+            transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 0.5 }}
+            className="text-5xl mb-4"
+          >
+            🍽️
+          </motion.div>
+          <p className="text-[#8B6F61] font-medium">
             あなたにぴったりのお店を探しています...
           </p>
         </motion.div>
@@ -56,40 +62,50 @@ export default function QuizPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background flex flex-col">
+    <main className="min-h-screen bg-gradient-to-b from-[#FFF8F0] to-[#FFF0E6] flex flex-col">
+      {/* Header */}
       <header className="flex items-center justify-between px-4 py-4">
         <button
           onClick={goBack}
           disabled={!canGoBack}
-          className={`p-2 rounded-full transition-colors ${
+          className={`p-2 rounded-xl transition-all ${
             canGoBack
-              ? "text-accent hover:bg-card"
-              : "text-accent-light/30 cursor-not-allowed"
+              ? "text-[#3d2e1f] hover:bg-white/60 active:scale-95"
+              : "text-[#5C3D2E]/20 cursor-not-allowed"
           }`}
         >
           <ChevronLeft size={24} />
         </button>
         <Link
           href="/"
-          className="font-heading font-bold text-primary text-lg"
+          className="font-heading font-bold text-[#3d2e1f] text-base"
         >
-          🍽️ こんやのきぶん
+          こんやのきぶん
         </Link>
         <div className="w-10" />
       </header>
 
+      {/* Progress */}
       <ProgressBar
         current={currentIndex}
         total={totalQuestions}
         progress={progress}
       />
 
-      <div className="flex-1 flex items-start justify-center pt-8 pb-16">
+      {/* Question */}
+      <div className="flex-1 flex items-start justify-center pt-6 pb-16">
         <QuizCard
           question={currentQuestion}
           onAnswer={answer}
           questionNumber={currentIndex + 1}
         />
+      </div>
+
+      {/* Bottom hint */}
+      <div className="text-center pb-8 px-6">
+        <p className="text-[10px] text-[#8B6F61]/40">
+          タップして回答 ・ 戻るボタンでやり直し
+        </p>
       </div>
     </main>
   );

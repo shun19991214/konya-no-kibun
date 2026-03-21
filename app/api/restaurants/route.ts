@@ -91,8 +91,13 @@ export async function GET(request: NextRequest) {
       params.set("lng", lng);
       params.set("range", String(range));
     }
-    if (genre) params.set("genre", genre);
-    if (keyword) params.set("keyword", keyword);
+    // keyword がある場合は keyword のみで検索（genre との AND 検索は結果が極端に減るため）
+    // keyword がない場合は genre コードで検索
+    if (keyword) {
+      params.set("keyword", keyword);
+    } else if (genre) {
+      params.set("genre", genre);
+    }
 
     try {
       const res = await fetch(`${BASE_URL}?${params.toString()}`);

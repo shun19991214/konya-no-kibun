@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Share2, Check } from "lucide-react";
+import { Share2, Check, Link2 } from "lucide-react";
 import type { Genre } from "@/types";
 
 interface ShareButtonsProps {
@@ -37,35 +37,40 @@ export function ShareButtons({ genre }: ShareButtonsProps) {
   }
 
   return (
-    <div className="flex flex-wrap gap-3 justify-center">
-      <a
-        href={twitterUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-black text-white text-sm font-medium hover:bg-gray-800 transition-colors"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-        </svg>
-        Xでシェア
-      </a>
+    <div className="space-y-3">
+      <p className="text-center text-xs text-[#8B6F61]/50 font-medium">
+        結果をシェア
+      </p>
+      <div className="flex gap-3 justify-center">
+        <a
+          href={twitterUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1a1a1a] text-white text-sm font-medium hover:bg-black transition-all hover:scale-105 active:scale-95 shadow-sm"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+          </svg>
+          X
+        </a>
 
-      <a
-        href={lineUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#06C755] text-white text-sm font-medium hover:bg-[#05b34d] transition-colors"
-      >
-        LINE
-      </a>
+        <a
+          href={lineUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#06C755] text-white text-sm font-medium hover:bg-[#05b34d] transition-all hover:scale-105 active:scale-95 shadow-sm"
+        >
+          LINE
+        </a>
 
-      <button
-        onClick={handleShare}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-card text-accent text-sm font-medium hover:bg-primary/10 transition-colors"
-      >
-        {copied ? <Check size={16} /> : <Share2 size={16} />}
-        {copied ? "コピーしました" : "リンクをコピー"}
-      </button>
+        <button
+          onClick={handleShare}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-[#5C3D2E]/10 text-[#3d2e1f] text-sm font-medium hover:bg-[#FFF0E6] transition-all hover:scale-105 active:scale-95 shadow-sm"
+        >
+          {copied ? <Check size={14} /> : <Link2 size={14} />}
+          {copied ? "Copied!" : "コピー"}
+        </button>
+      </div>
     </div>
   );
 }

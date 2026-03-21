@@ -36,7 +36,7 @@ export function QuizCard({ question, onAnswer, questionNumber }: QuizCardProps) 
           <motion.span
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-block text-sm font-medium text-primary mb-2"
+            className="inline-block text-xs font-bold text-white bg-[#FF6B35] px-3 py-1 rounded-full mb-3"
           >
             Q{questionNumber}
           </motion.span>
@@ -44,7 +44,7 @@ export function QuizCard({ question, onAnswer, questionNumber }: QuizCardProps) 
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-2xl font-heading font-bold text-accent"
+            className="text-2xl md:text-3xl font-heading font-bold text-[#3d2e1f]"
           >
             {question.text}
           </motion.h2>
@@ -53,7 +53,7 @@ export function QuizCard({ question, onAnswer, questionNumber }: QuizCardProps) 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="text-sm text-accent-light/60 mt-1"
+              className="text-sm text-[#8B6F61]/70 mt-2"
             >
               {question.subtext}
             </motion.p>
@@ -66,24 +66,24 @@ export function QuizCard({ question, onAnswer, questionNumber }: QuizCardProps) 
               key={choice.id}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + i * 0.06 }}
+              transition={{ delay: 0.15 + i * 0.06 }}
               onClick={() => handleSelect(choice.id)}
               whileHover={selected === null ? { scale: 1.02 } : undefined}
-              whileTap={selected === null ? { scale: 0.98 } : undefined}
+              whileTap={selected === null ? { scale: 0.97 } : undefined}
               className={`
-                flex items-center gap-4 p-4 rounded-2xl text-left
+                flex items-center gap-4 p-4 md:p-5 rounded-2xl text-left
                 transition-all duration-300
                 ${
                   selected === choice.id
-                    ? "warm-card-selected"
+                    ? "bg-[#FF6B35]/10 border-2 border-[#FF6B35] shadow-md scale-[0.98]"
                     : selected !== null
-                      ? "warm-card-disabled"
-                      : "warm-card"
+                      ? "bg-white/30 border border-transparent opacity-40 cursor-not-allowed"
+                      : "bg-white/70 border border-[#5C3D2E]/5 shadow-sm hover:bg-white hover:shadow-md hover:border-[#FF6B35]/20"
                 }
               `}
             >
-              <span className="text-2xl flex-shrink-0">{choice.emoji}</span>
-              <span className="text-base font-medium text-accent">
+              <span className="text-3xl flex-shrink-0">{choice.emoji}</span>
+              <span className="text-base font-medium text-[#3d2e1f]">
                 {choice.text}
               </span>
             </motion.button>

@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+:root {
+  --font-sans: "Noto Sans JP", system-ui, sans-serif;
+  --font-heading: "Zen Maru Gothic", system-ui, sans-serif;
+}
+
+body {
+  background-color: #fffbf5;
+  color: #5c3d2e;
+  font-family: var(--font-sans);
+}
+
+/* Warm card styles */
+.warm-card {
+  background: #fff0e6;
+  border: 1px solid rgba(255, 107, 53, 0.12);
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+}
+
+.warm-card:hover {
+  background: #ffe8d6;
+  border-color: rgba(255, 107, 53, 0.25);
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.1);
+}
+
+.warm-card-selected {
+  background: #ffd9c0;
+  border-color: #ff6b35;
+  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.3);
+}
+
+.warm-card-disabled {
+  background: #fff5ee;
+  border-color: rgba(255, 107, 53, 0.06);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #ff6b35, #ff8f5e, #e55a2b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Custom animations */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(255, 107, 53, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 107, 53, 0.3);
+  }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 3s ease-in-out infinite;
+}

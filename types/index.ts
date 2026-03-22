@@ -14,20 +14,12 @@ export interface Choice {
   scores: AxisScores;
 }
 
-// 移動手段の選択肢（スコアリングではなくrange決定用）
-export interface TransportChoice {
-  id: string;
-  text: string;
-  emoji: string;
-  range: number; // ホットペッパーAPI range (1-5)
-}
-
 export interface Question {
   id: number;
   text: string;
   subtext?: string;
-  type: "score" | "transport"; // scoreはスコアリング用、transportは検索範囲用
-  choices: Choice[] | TransportChoice[];
+  type: "score";
+  choices: Choice[];
 }
 
 // === ジャンル ===

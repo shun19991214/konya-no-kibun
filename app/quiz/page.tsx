@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
@@ -8,7 +8,6 @@ import { useQuiz } from "@/hooks/useQuiz";
 import { QuizCard } from "@/components/quiz/QuizCard";
 import { ProgressBar } from "@/components/quiz/ProgressBar";
 import Link from "next/link";
-import type { Question } from "@/types";
 
 export default function QuizPage() {
   const router = useRouter();
@@ -17,7 +16,6 @@ export default function QuizPage() {
     currentIndex,
     isComplete,
     scores,
-    range,
     topGenres,
     progress,
     totalQuestions,
@@ -34,24 +32,14 @@ export default function QuizPage() {
         wy: String(scores.wafuYofu),
         cf: String(scores.casualFormal),
         ad: String(scores.adventurous),
-        range: String(range),
-        q1: answers[1] || "",
-        q4: answers[4] || "",
       });
+      // 全回答をパラメータに含める（コンテキストペナルティ用）
+      for (const [qId, choiceId] of Object.entries(answers)) {
+        params.set(`q${qId}`, choiceId);
+      }
       router.push(`/result?${params.toString()}`);
     }
-  }, [isComplete, topGenres, scores, range, router]);
-
-  // Q3の説明文をQ1の回答に応じて動的に変更
-  const dynamicQuestion = useMemo(() => {
-    if (!currentQuestion || currentQuestion.id !== 3) return currentQuestion;
-    const q1Answer = answers[1];
-    let subtext = "ひとり分の目安で";
-    if (q1Answer === "1b") subtext = "ふたり分の合計の目安で";
-    else if (q1Answer === "1c") subtext = "ひとり分の目安で";
-    else if (q1Answer === "1d") subtext = "ひとり分の目安で";
-    return { ...currentQuestion, subtext } as Question;
-  }, [currentQuestion, answers]);
+  }, [isComplete, topGenres, scores, router, answers]);
 
   // 戻った時に前の回答を取得
   const previousAnswer = currentQuestion
@@ -112,7 +100,7 @@ export default function QuizPage() {
 
       <div className="flex-1 flex items-start justify-center pt-6 pb-16">
         <QuizCard
-          question={dynamicQuestion || currentQuestion}
+          question={currentQuestion}
           onAnswer={answer}
           questionNumber={currentIndex + 1}
           previousAnswer={previousAnswer}

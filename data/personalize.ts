@@ -3,7 +3,8 @@ import type { GenreId } from "@/types";
 interface AnswerLabels {
   who: string;
   mood: string;
-  priority: string;
+  body: string;
+  vibe: string;
 }
 
 const WHO_LABELS: Record<string, string> = {
@@ -14,44 +15,52 @@ const WHO_LABELS: Record<string, string> = {
 };
 
 const MOOD_LABELS: Record<string, string> = {
-  "2a": "がっつり",
-  "2b": "さっぱり",
-  "2c": "おしゃれ",
+  "2a": "パワーチャージ",
+  "2b": "癒し",
+  "2c": "特別な時間",
   "2d": "冒険",
 };
 
-const PRIORITY_LABELS: Record<string, string> = {
-  "6a": "コスパ重視",
-  "6b": "雰囲気重視",
-  "6c": "ボリューム重視",
-  "6d": "味の本格さ重視",
+const BODY_LABELS: Record<string, string> = {
+  "3a": "がっつり",
+  "3b": "軽め",
+  "3c": "刺激系",
+  "3d": "あったか",
+};
+
+const VIBE_LABELS: Record<string, string> = {
+  "5a": "サクッと",
+  "5b": "バランス",
+  "5c": "奮発",
+  "5d": "満腹",
 };
 
 function getLabels(answers: Record<number, string>): AnswerLabels {
   return {
     who: WHO_LABELS[answers[1]] || "",
     mood: MOOD_LABELS[answers[2]] || "",
-    priority: PRIORITY_LABELS[answers[6]] || "",
+    body: BODY_LABELS[answers[3]] || "",
+    vibe: VIBE_LABELS[answers[5]] || "",
   };
 }
 
-const GENRE_REASONS: Record<GenreId, (labels: AnswerLabels) => string> = {
-  washoku: (l) => `${l.mood}気分の${l.who || "あなた"}に、ほっとする和の味わいがぴったり`,
-  sushi: (l) => `${l.who || "今夜"}の${l.priority || "特別な時間"}に、新鮮なネタで贅沢を`,
-  ramen: (l) => `${l.mood}気分には一杯入魂のラーメンが最適解`,
-  "udon-soba": (l) => `${l.mood}気分のあなたに、出汁の優しさが染みる一杯`,
-  chinese: (l) => `${l.who || "今夜"}の${l.mood}気分に、中華のボリュームがちょうどいい`,
-  italian: (l) => `${l.who || ""}で${l.priority || "おしゃれな夜"}を過ごすなら、イタリアンで決まり`,
-  french: (l) => `${l.who || "特別な夜"}に、${l.priority || "雰囲気重視"}のフレンチで贅沢を`,
-  yakiniku: (l) => `${l.mood}気分の${l.who || "あなた"}に、肉のパワーでテンションUP`,
-  yakitori: (l) => `${l.mood}気分の${l.who || "今夜"}に、炭火の香ばしさがたまらない`,
+const GENRE_REASONS: Record<GenreId, (l: AnswerLabels) => string> = {
+  washoku: (l) => `${l.mood || "癒し"}モードの${l.who || "あなた"}に、和の味わいで心もお腹も満たされて`,
+  sushi: (l) => `${l.who || "今夜"}の${l.mood || "特別な時間"}にふさわしい、旬のネタで贅沢を`,
+  ramen: (l) => `${l.body || "がっつり"}な体に、一杯入魂のラーメンが染みる`,
+  "udon-soba": (l) => `${l.body || "あったか"}な気分に、出汁の優しさがぴったり`,
+  chinese: (l) => `${l.body || "がっつり"}食べたい${l.who || "あなた"}に、中華のボリュームが◎`,
+  italian: (l) => `${l.mood || "特別な時間"}を${l.who || "一緒に"}楽しむなら、イタリアンで決まり`,
+  french: (l) => `${l.who || "大切な人"}との${l.mood || "特別な時間"}に、フレンチで贅沢を`,
+  yakiniku: (l) => `${l.body || "がっつり"}な体が求める、肉のパワーでテンションUP`,
+  yakitori: (l) => `${l.who || "今夜"}の${l.mood || "リラックス"}に、炭火の香ばしさがたまらない`,
   izakaya: (l) => `${l.who || "みんな"}で楽しむなら、なんでも揃う居酒屋が安心`,
-  curry: (l) => `${l.mood}気分にスパイスの刺激で元気になれる一皿`,
-  "thai-vietnamese": (l) => `${l.mood}な気分にぴったり、異国の味で冒険の夜を`,
-  korean: (l) => `${l.mood}気分の${l.who || "あなた"}に、ピリ辛でパワーチャージ`,
-  hamburger: (l) => `${l.mood}気分を${l.priority || "カジュアルに"}満たすならバーガーで`,
-  steak: (l) => `${l.mood}気分の${l.who || "あなた"}に、肉の旨味を存分に`,
-  teishoku: (l) => `${l.priority || "バランスよく"}食べたい${l.who || "あなた"}に、定食の安心感`,
+  curry: (l) => `${l.body || "刺激系"}な気分に、スパイスの力で元気になれる`,
+  "thai-vietnamese": (l) => `${l.mood || "冒険"}したい${l.who || "あなた"}に、異国の味で新しい夜を`,
+  korean: (l) => `${l.body || "刺激系"}な体にぴったり、ピリ辛でパワーチャージ`,
+  hamburger: (l) => `${l.vibe || "サクッと"}${l.body || "がっつり"}食べたいなら、バーガーに決まり`,
+  steak: (l) => `${l.body || "がっつり"}な体が求める、肉の旨味を存分に堪能`,
+  teishoku: (l) => `${l.vibe || "バランス"}よく食べたい${l.who || "あなた"}に、定食の安心感`,
 };
 
 export function getPersonalizedReason(

@@ -6,8 +6,15 @@ import { MapPin, Search, Navigation } from "lucide-react";
 import { useLocation } from "@/hooks/useLocation";
 import type { Genre } from "@/types";
 
+const TRANSPORT_OPTIONS = [
+  { id: "walk", label: "徒歩", emoji: "🚶", range: 2 },
+  { id: "bike", label: "自転車", emoji: "🚲", range: 3 },
+  { id: "train", label: "電車", emoji: "🚃", range: 4 },
+  { id: "car", label: "車", emoji: "🚗", range: 5 },
+];
+
 interface LocationPromptProps {
-  onLocationGranted: (lat: number, lng: number) => void;
+  onLocationGranted: (lat: number, lng: number, range: number) => void;
   onManualSearch: (keyword: string) => void;
   selectedGenre: Genre | null;
 }
@@ -20,15 +27,16 @@ export function LocationPrompt({
   const { status, lat, lng, requestLocation } = useLocation();
   const [manualInput, setManualInput] = useState("");
   const [showManual, setShowManual] = useState(false);
+  const [selectedRange, setSelectedRange] = useState(3);
 
   useEffect(() => {
     if (status === "granted" && lat && lng) {
-      onLocationGranted(lat, lng);
+      onLocationGranted(lat, lng, selectedRange);
     }
     if (status === "denied") {
       setShowManual(true);
     }
-  }, [status, lat, lng, onLocationGranted]);
+  }, [status, lat, lng, onLocationGranted, selectedRange]);
 
   function handleManualSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,9 +60,29 @@ export function LocationPrompt({
             ? `近くの${selectedGenre.name}を探す`
             : "近くのお店を探す"}
         </h2>
-        <p className="text-xs text-[#8B6F61] mt-1">
-          位置情報を使って周辺のお店を検索します
+      </div>
+
+      {/* Transport selector */}
+      <div className="mb-4">
+        <p className="text-xs text-[#8B6F61] mb-2 text-center">
+          今日のフットワークは？
         </p>
+        <div className="grid grid-cols-4 gap-2">
+          {TRANSPORT_OPTIONS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setSelectedRange(t.range)}
+              className={`flex flex-col items-center gap-1 py-2 rounded-xl text-xs font-medium transition-all ${
+                selectedRange === t.range
+                  ? "bg-[#FF6B35]/10 border-2 border-[#FF6B35]/30 text-[#FF6B35]"
+                  : "bg-[#FFF8F0] border border-[#5C3D2E]/5 text-[#8B6F61] hover:bg-[#FFF0E6]"
+              }`}
+            >
+              <span className="text-lg">{t.emoji}</span>
+              <span>{t.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {!showManual ? (
@@ -65,9 +93,7 @@ export function LocationPrompt({
             className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-2xl bg-[#FF6B35] text-white font-bold text-base hover:bg-[#E55A2B] active:scale-[0.98] transition-all shadow-md disabled:opacity-50"
           >
             <Navigation size={18} />
-            {status === "requesting"
-              ? "取得中..."
-              : "現在地からお店を探す"}
+            {status === "requesting" ? "取得中..." : "現在地からお店を探す"}
           </button>
 
           <button

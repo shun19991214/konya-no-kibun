@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import type { AxisScores, Choice, TransportChoice } from "@/types";
+import type { AxisScores, Choice } from "@/types";
 import { QUESTIONS, INITIAL_SCORES } from "@/data/questions";
 import { getTopThreeWithHistory } from "@/data/scoring";
 import type { GenreId } from "@/types";
@@ -43,7 +43,6 @@ export function useQuiz() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [scores, setScores] = useState<AxisScores>({ ...INITIAL_SCORES });
-  const [range, setRange] = useState(3); // default: 1km
 
   const totalQuestions = QUESTIONS.length;
   const currentQuestion = QUESTIONS[currentIndex];
@@ -60,16 +59,11 @@ export function useQuiz() {
       const question = QUESTIONS[currentIndex];
       if (!question) return;
 
-      if (question.type === "transport") {
-        const choice = question.choices.find(
-          (c) => c.id === choiceId
-        ) as TransportChoice;
-        if (choice) setRange(choice.range);
-      } else {
-        const choice = question.choices.find(
-          (c) => c.id === choiceId
-        ) as Choice;
-        if (choice) setScores((prev) => addScores(prev, choice.scores));
+      const choice = question.choices.find(
+        (c) => c.id === choiceId
+      ) as Choice;
+      if (choice?.scores) {
+        setScores((prev) => addScores(prev, choice.scores));
       }
 
       setAnswers((prev) => ({ ...prev, [question.id]: choiceId }));
@@ -85,11 +79,13 @@ export function useQuiz() {
     const prevQuestion = QUESTIONS[prevIndex];
     const prevChoiceId = answers[prevQuestion.id];
 
-    if (prevChoiceId && prevQuestion.type === "score") {
+    if (prevChoiceId) {
       const prevChoice = prevQuestion.choices.find(
         (c) => c.id === prevChoiceId
       ) as Choice;
-      if (prevChoice) setScores((prev) => subtractScores(prev, prevChoice.scores));
+      if (prevChoice?.scores) {
+        setScores((prev) => subtractScores(prev, prevChoice.scores));
+      }
     }
 
     setAnswers((prev) => {
@@ -104,7 +100,6 @@ export function useQuiz() {
     setCurrentIndex(0);
     setAnswers({});
     setScores({ ...INITIAL_SCORES });
-    setRange(3);
   }, []);
 
   return {
@@ -112,7 +107,6 @@ export function useQuiz() {
     currentQuestion,
     answers,
     scores,
-    range,
     isComplete,
     topGenres,
     progress,

@@ -11,12 +11,12 @@ export const metadata: Metadata = {
   },
   title: "こんやのきぶん | 気分で決まる夜ごはん",
   description:
-    "夜ごはんが決まらないあなたへ。6つの質問に答えるだけで、今の気分にぴったりの外食ジャンルと近くのお店を提案します。",
+    "夜ごはんが決まらないあなたへ。5つの質問に答えるだけで、今の気分にぴったりの外食ジャンルと近くのお店を提案します。",
   metadataBase: new URL("https://konya-no-kibun.vercel.app"),
   openGraph: {
     title: "こんやのきぶん | 気分で決まる夜ごはん",
     description:
-      "6つの質問に答えるだけで、今夜にぴったりの外食先が見つかる！",
+      "5つの質問に答えるだけで、今夜にぴったりの外食先が見つかる！",
     type: "website",
     locale: "ja_JP",
   },
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "こんやのきぶん | 気分で決まる夜ごはん",
     description:
-      "6つの質問に答えるだけで、今夜にぴったりの外食先が見つかる！",
+      "5つの質問に答えるだけで、今夜にぴったりの外食先が見つかる！",
   },
 };
 

@@ -47,29 +47,25 @@ function ResultContent() {
     casualFormal: Number(searchParams.get("cf")) || 0,
     adventurous: Number(searchParams.get("ad")) || 0,
   };
-  const range = Number(searchParams.get("range")) || 3;
   const quizAnswers: Record<number, string> = {};
-  const q1 = searchParams.get("q1");
-  const q4 = searchParams.get("q4");
-  if (q1) quizAnswers[1] = q1;
-  if (q4) quizAnswers[4] = q4;
+  for (let i = 1; i <= 5; i++) {
+    const val = searchParams.get(`q${i}`);
+    if (val) quizAnswers[i] = val;
+  }
 
   // Compute results client-side only to avoid hydration mismatch
   useEffect(() => {
-    let recentGenres: GenreId[] = [];
+    let recentHistory: { topGenres: GenreId[]; timestamp: number }[] = [];
     try {
       const history = JSON.parse(
         localStorage.getItem("yorugohan_history") || "[]"
       );
-      const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-      recentGenres = history
-        .filter((h: { timestamp: number }) => h.timestamp > oneWeekAgo)
-        .flatMap((h: { topGenres: GenreId[] }) => h.topGenres);
+      recentHistory = history;
     } catch {
       // ignore
     }
 
-    const topGenreIds = getTopThreeWithContext(scores, quizAnswers, recentGenres);
+    const topGenreIds = getTopThreeWithContext(scores, quizAnswers, recentHistory);
     const genres = topGenreIds.map((id) => GENRE_MAP[id]).filter(Boolean);
     setTopGenres(genres);
     if (genres.length > 0) {
@@ -81,7 +77,7 @@ function ResultContent() {
   }, []);
 
   const searchRestaurants = useCallback(
-    async (lat: number, lng: number) => {
+    async (lat: number, lng: number, range: number = 3) => {
       if (!selectedGenre) return;
       setUserLocation({ lat, lng });
       setIsLoading(true);
@@ -109,7 +105,7 @@ function ResultContent() {
         setIsLoading(false);
       }
     },
-    [selectedGenre, range]
+    [selectedGenre]
   );
 
   const searchByKeyword = useCallback(

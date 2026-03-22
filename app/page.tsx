@@ -67,7 +67,7 @@ export default function Home() {
             こんやのきぶん
           </h1>
           <p className="text-base md:text-lg text-white/70 font-medium mb-10">
-            6つの質問で、今夜の外食先が決まる
+            5つの質問で、今夜の外食先が決まる
           </p>
 
           {/* CTA */}
@@ -135,7 +135,7 @@ export default function Home() {
             {[
               {
                 num: "1",
-                title: "6つの質問に答える",
+                title: "5つの質問に答える",
                 desc: "気分・予算・移動手段をタップで選ぶだけ",
                 color: "#FF6B35",
               },

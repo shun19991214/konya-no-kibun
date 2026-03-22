@@ -7,6 +7,13 @@ import type { Genre, GenreId } from "@/types";
 // G010: 各国料理, G013: ラーメン, G014: カフェ・スイーツ,
 // G016: お好み焼き・もんじゃ, G017: 韓国料理
 
+// ideal: 4次元空間上のジャンルの理想位置
+// weight: 軸ごとの弁別重み（高い=その軸がこのジャンルを他と区別するのに重要）
+// 設計方針:
+//   - heavyLight と casualFormal が独立に動くよう配置
+//   - wafuYofu の弁別力を強化（和食系は負、エスニック系は正を明確に）
+//   - 原点付近に「定食・食堂」を配置（ニュートラルな選択肢）
+
 export const GENRES: Genre[] = [
   {
     id: "washoku",
@@ -15,7 +22,7 @@ export const GENRES: Genre[] = [
     description: "ほっとする日本の味",
     hotpepperCode: "G004",
     ideal: { heavyLight: 1, wafuYofu: -3, casualFormal: 2, adventurous: -2 },
-    weight: { heavyLight: 1, wafuYofu: 3, casualFormal: 1, adventurous: 1 },
+    weight: { heavyLight: 1, wafuYofu: 3, casualFormal: 2, adventurous: 1 },
   },
   {
     id: "sushi",
@@ -24,8 +31,8 @@ export const GENRES: Genre[] = [
     description: "特別な日にもふだんにも",
     hotpepperCode: "G004",
     keyword: "寿司",
-    ideal: { heavyLight: 1, wafuYofu: -3, casualFormal: 3, adventurous: -1 },
-    weight: { heavyLight: 1, wafuYofu: 2, casualFormal: 2, adventurous: 1 },
+    ideal: { heavyLight: 0, wafuYofu: -3, casualFormal: 3, adventurous: -1 },
+    weight: { heavyLight: 1, wafuYofu: 2, casualFormal: 3, adventurous: 1 },
   },
   {
     id: "ramen",
@@ -33,8 +40,8 @@ export const GENRES: Genre[] = [
     emoji: "🍜",
     description: "迷ったらこれ。魂の一杯",
     hotpepperCode: "G013",
-    ideal: { heavyLight: -3, wafuYofu: -1, casualFormal: -3, adventurous: -1 },
-    weight: { heavyLight: 3, wafuYofu: 1, casualFormal: 2, adventurous: 1 },
+    ideal: { heavyLight: -3, wafuYofu: -2, casualFormal: -3, adventurous: -1 },
+    weight: { heavyLight: 3, wafuYofu: 2, casualFormal: 2, adventurous: 1 },
   },
   {
     id: "udon-soba",
@@ -43,7 +50,7 @@ export const GENRES: Genre[] = [
     description: "やさしい出汁に癒される",
     hotpepperCode: "G004",
     keyword: "うどん",
-    ideal: { heavyLight: 2, wafuYofu: -3, casualFormal: -1, adventurous: -2 },
+    ideal: { heavyLight: 2, wafuYofu: -3, casualFormal: -2, adventurous: -2 },
     weight: { heavyLight: 2, wafuYofu: 3, casualFormal: 1, adventurous: 1 },
   },
   {
@@ -52,7 +59,7 @@ export const GENRES: Genre[] = [
     emoji: "🥟",
     description: "みんな大好き、ボリューム満点",
     hotpepperCode: "G007",
-    ideal: { heavyLight: -1, wafuYofu: 0, casualFormal: -1, adventurous: 0 },
+    ideal: { heavyLight: -2, wafuYofu: 0, casualFormal: -1, adventurous: 0 },
     weight: { heavyLight: 2, wafuYofu: 1, casualFormal: 1, adventurous: 1 },
   },
   {
@@ -71,7 +78,7 @@ export const GENRES: Genre[] = [
     description: "ちょっと贅沢な時間を",
     hotpepperCode: "G006",
     keyword: "フレンチ",
-    ideal: { heavyLight: 0, wafuYofu: 2, casualFormal: 4, adventurous: 1 },
+    ideal: { heavyLight: 0, wafuYofu: 2, casualFormal: 5, adventurous: 1 },
     weight: { heavyLight: 1, wafuYofu: 2, casualFormal: 3, adventurous: 1 },
   },
   {
@@ -91,7 +98,7 @@ export const GENRES: Genre[] = [
     hotpepperCode: "G001",
     keyword: "焼鳥",
     ideal: { heavyLight: -1, wafuYofu: -1, casualFormal: -2, adventurous: -1 },
-    weight: { heavyLight: 1, wafuYofu: 1, casualFormal: 2, adventurous: 1 },
+    weight: { heavyLight: 1, wafuYofu: 2, casualFormal: 2, adventurous: 1 },
   },
   {
     id: "izakaya",
@@ -109,8 +116,8 @@ export const GENRES: Genre[] = [
     description: "スパイスで元気になろう",
     hotpepperCode: "G009",
     keyword: "カレー",
-    ideal: { heavyLight: -1, wafuYofu: 1, casualFormal: -2, adventurous: 1 },
-    weight: { heavyLight: 1, wafuYofu: 2, casualFormal: 2, adventurous: 2 },
+    ideal: { heavyLight: -1, wafuYofu: 2, casualFormal: -2, adventurous: 1 },
+    weight: { heavyLight: 1, wafuYofu: 3, casualFormal: 2, adventurous: 2 },
   },
   {
     id: "thai-vietnamese",
@@ -127,8 +134,8 @@ export const GENRES: Genre[] = [
     emoji: "🥘",
     description: "ピリ辛でパワーチャージ",
     hotpepperCode: "G017",
-    ideal: { heavyLight: -1, wafuYofu: 1, casualFormal: -1, adventurous: 2 },
-    weight: { heavyLight: 1, wafuYofu: 2, casualFormal: 1, adventurous: 2 },
+    ideal: { heavyLight: -1, wafuYofu: 2, casualFormal: -1, adventurous: 2 },
+    weight: { heavyLight: 1, wafuYofu: 3, casualFormal: 1, adventurous: 2 },
   },
   {
     id: "hamburger",
@@ -137,7 +144,7 @@ export const GENRES: Genre[] = [
     description: "カジュアルに、がっつりと",
     hotpepperCode: "G005",
     keyword: "ハンバーガー",
-    ideal: { heavyLight: -3, wafuYofu: 1, casualFormal: -3, adventurous: 0 },
+    ideal: { heavyLight: -2, wafuYofu: 1, casualFormal: -3, adventurous: 0 },
     weight: { heavyLight: 2, wafuYofu: 1, casualFormal: 2, adventurous: 1 },
   },
   {
@@ -147,8 +154,8 @@ export const GENRES: Genre[] = [
     description: "肉の旨味を堪能する",
     hotpepperCode: "G005",
     keyword: "ステーキ",
-    ideal: { heavyLight: -3, wafuYofu: 1, casualFormal: 1, adventurous: -1 },
-    weight: { heavyLight: 2, wafuYofu: 1, casualFormal: 2, adventurous: 1 },
+    ideal: { heavyLight: -3, wafuYofu: 1, casualFormal: 2, adventurous: 0 },
+    weight: { heavyLight: 3, wafuYofu: 1, casualFormal: 2, adventurous: 1 },
   },
   {
     id: "teishoku",
@@ -157,7 +164,7 @@ export const GENRES: Genre[] = [
     description: "バランスよく、おなかいっぱい",
     hotpepperCode: "G004",
     keyword: "定食",
-    ideal: { heavyLight: 0, wafuYofu: -1, casualFormal: -3, adventurous: -2 },
+    ideal: { heavyLight: 0, wafuYofu: -1, casualFormal: -2, adventurous: -2 },
     weight: { heavyLight: 1, wafuYofu: 1, casualFormal: 2, adventurous: 2 },
   },
 ];

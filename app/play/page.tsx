@@ -111,12 +111,12 @@ export default function PlayPage() {
 
   const handleAnswer = useCallback((option: OptionNode) => {
     setSelectedOptionId(option.id);
-    // Delay to show selection animation
+    // Short delay for selection feedback, then advance
     setTimeout(() => {
       setDirection("forward");
       advance(option);
       setSelectedOptionId(null);
-    }, 400);
+    }, 200);
   }, [advance]);
 
   const handleBack = useCallback(() => {
@@ -240,17 +240,15 @@ export default function PlayPage() {
           <button
             onClick={handleBack}
             disabled={!canGoBack}
-            className={`flex items-center gap-1 p-2 rounded-xl transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all ${
               canGoBack
                 ? "text-gray-700 hover:bg-white/60 active:scale-95"
                 : "text-gray-300 cursor-not-allowed"
             }`}
           >
-            <ChevronLeft size={20} />
-            {prevLabel && (
-              <span className="text-xs text-gray-500">
-                {prevLabel.emoji} {prevLabel.label}
-              </span>
+            <ChevronLeft size={18} />
+            {canGoBack && (
+              <span className="text-xs font-medium text-gray-500">戻る</span>
             )}
           </button>
           <Link href="/" className="font-bold text-gray-800 text-sm">
@@ -259,19 +257,18 @@ export default function PlayPage() {
           <div className="w-10" />
         </header>
 
-        {/* Progress dots — fixed 4 steps */}
+        {/* Progress dots — fixed 4 steps, unified orange color */}
         <div className="flex justify-center gap-1.5 py-2">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
               className={`h-2 rounded-full transition-all duration-500 ${
                 i < questionDepth
-                  ? "w-6 bg-current opacity-80"
+                  ? "w-6 bg-orange-400 opacity-80"
                   : i === questionDepth
-                    ? "w-8 bg-current"
-                    : "w-2 bg-gray-300/50"
+                    ? "w-8 bg-orange-500"
+                    : "w-2 bg-gray-300/40"
               }`}
-              style={{ color: theme.accent }}
             />
           ))}
         </div>
@@ -299,9 +296,9 @@ export default function PlayPage() {
             <motion.div
               key={state.currentNodeId}
               custom={direction}
-              initial={{ x: direction === "forward" ? 200 : -200, opacity: 0 }}
-              animate={{ x: 0, opacity: 1, transition: { duration: 0.3, ease: "easeOut" } }}
-              exit={{ x: direction === "forward" ? -200 : 200, opacity: 0, transition: { duration: 0.2, ease: "easeIn" } }}
+              initial={{ x: direction === "forward" ? 100 : -100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1, transition: { duration: 0.2, ease: "easeOut" } }}
+              exit={{ x: direction === "forward" ? -100 : 100, opacity: 0, transition: { duration: 0.15, ease: "easeIn" } }}
               className="w-full max-w-md"
             >
               <h2 className="text-2xl font-bold text-gray-800 text-center mb-1">
@@ -326,7 +323,7 @@ export default function PlayPage() {
                         y: 0,
                         scale: isSelected ? 1.03 : isOther ? 0.97 : 1,
                       }}
-                      transition={{ delay: selectedOptionId ? 0 : i * 0.05, duration: 0.25 }}
+                      transition={{ delay: selectedOptionId ? 0 : i * 0.03, duration: 0.15 }}
                       onClick={() => !selectedOptionId && handleAnswer(option)}
                       whileHover={!selectedOptionId ? { scale: 1.02 } : undefined}
                       whileTap={!selectedOptionId ? { scale: 0.97 } : undefined}
@@ -477,10 +474,58 @@ export default function PlayPage() {
         </section>
 
         <section className="max-w-md mx-auto px-6 -mt-8 relative z-10">
+          {/* Sibling suggestions — moved up, right after hero */}
+          {resolvedEndpoint.siblingHint && resolvedEndpoint.siblingHint.length > 0 && (
+            <div className="mb-6 p-4 bg-orange-50 rounded-2xl border border-orange-100">
+              <div className="flex items-center gap-2 mb-3">
+                <KibunKun expression="excited" size={36} />
+                <p className="text-sm font-medium text-gray-700">こっちもアリかも！</p>
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {resolvedEndpoint.siblingHint.map((hint) => {
+                  const ep = findEndpointByLabel(hint);
+                  const genre = ep ? GENRE_MAP[ep.genreIds[0]] : null;
+                  return (
+                    <button
+                      key={hint}
+                      onClick={() => {
+                        if (ep) {
+                          let resolved = ep;
+                          if (resolved.genreIds.includes("__random__")) {
+                            const randomIds = resolveRandomGenre(resolved.resultLabel);
+                            resolved = { ...resolved, genreIds: randomIds };
+                          }
+                          setResolvedEndpoint(resolved);
+                          setRestaurants([]);
+                          setActiveChips([]);
+                          setUserLocation(null);
+                        }
+                      }}
+                      className="shrink-0 flex items-center gap-2 px-4 py-2.5 bg-white rounded-xl border border-orange-200 text-sm text-gray-700 shadow-sm hover:border-orange-400 hover:shadow-md transition-all active:scale-95"
+                    >
+                      {genre && <span className="text-lg">{genre.icon}</span>}
+                      <span className="font-medium">{hint}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Retry — also here near the top */}
+          <div className="flex justify-center mb-6">
+            <button
+              onClick={handleReset}
+              className="text-xs text-orange-500 font-medium hover:underline"
+            >
+              🔄 もう一度診断する
+            </button>
+          </div>
+
           {/* Q4 Chips */}
           {resolvedEndpoint.q4Options.length > 0 && (
             <div className="mb-6">
-              <p className="text-xs text-gray-500 mb-2 font-medium">こだわり条件</p>
+              <p className="text-xs text-gray-500 mb-2 font-medium">条件で絞り込む</p>
               <div className="flex flex-wrap gap-2">
                 {resolvedEndpoint.q4Options.map((chip) => {
                   const isActive = activeChips.some((c) => c.id === chip.id);
@@ -591,12 +636,12 @@ export default function PlayPage() {
                 >
                   {r.photo.pc.m && (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={r.photo.pc.m} alt={r.name} className="w-full h-36 object-cover" />
+                    <img src={r.photo.pc.m} alt={r.name} loading="lazy" className="w-full h-40 object-cover" />
                   )}
-                  <div className="p-3">
-                    <h3 className="font-bold text-gray-800 text-sm">{r.name}</h3>
-                    {r.catchPhrase && <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{r.catchPhrase}</p>}
-                    <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                  <div className="p-4">
+                    <h3 className="font-bold text-gray-800">{r.name}</h3>
+                    {r.catchPhrase && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{r.catchPhrase}</p>}
+                    <div className="flex items-center gap-3 mt-2.5 text-xs text-gray-500">
                       {r.budget && <span>💰 {r.budget}</span>}
                       {r.access && <span className="line-clamp-1">📍 {r.access}</span>}
                     </div>
@@ -604,7 +649,7 @@ export default function PlayPage() {
                       href={r.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-orange-500 hover:text-orange-600 transition-colors"
+                      className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-orange-500 hover:text-orange-600 transition-colors"
                     >
                       ホットペッパーで見る →
                     </a>
@@ -614,12 +659,12 @@ export default function PlayPage() {
 
               {/* Hot Pepper credit */}
               <div className="flex flex-col items-center gap-2 pt-4">
-                <a href="http://webservice.recruit.co.jp/" target="_blank" rel="noopener noreferrer">
+                <a href="https://webservice.recruit.co.jp/" target="_blank" rel="noopener noreferrer">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="http://webservice.recruit.co.jp/banner/hotpepper-m.gif" alt="ホットペッパーグルメ" width={88} height={35} />
+                  <img src="https://webservice.recruit.co.jp/banner/hotpepper-m.gif" alt="ホットペッパーグルメ" width={88} height={35} />
                 </a>
                 <p className="text-[10px] text-gray-400">
-                  Powered by <a href="http://webservice.recruit.co.jp/" target="_blank" rel="noopener noreferrer" className="underline">ホットペッパーグルメ Webサービス</a>
+                  Powered by <a href="https://webservice.recruit.co.jp/" target="_blank" rel="noopener noreferrer" className="underline">ホットペッパーグルメ Webサービス</a>
                 </p>
               </div>
             </div>
@@ -629,44 +674,6 @@ export default function PlayPage() {
             <div className="text-center py-8">
               <KibunKun expression="thinking" size={64} speech="うーん、近くにないかも…" />
               <p className="text-gray-400 text-xs mt-4">検索範囲を広げてみてください</p>
-            </div>
-          )}
-
-          {/* Siblings */}
-          {resolvedEndpoint.siblingHint && resolvedEndpoint.siblingHint.length > 0 && (
-            <div className="mt-8 p-4 bg-orange-50 rounded-2xl border border-orange-100">
-              <div className="flex items-center gap-2 mb-3">
-                <KibunKun expression="excited" size={36} />
-                <p className="text-sm font-medium text-gray-700">こっちもアリかも！</p>
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {resolvedEndpoint.siblingHint.map((hint) => {
-                  const ep = findEndpointByLabel(hint);
-                  const genre = ep ? GENRE_MAP[ep.genreIds[0]] : null;
-                  return (
-                    <button
-                      key={hint}
-                      onClick={() => {
-                        if (ep) {
-                          let resolved = ep;
-                          if (resolved.genreIds.includes("__random__")) {
-                            const randomIds = resolveRandomGenre(resolved.resultLabel);
-                            resolved = { ...resolved, genreIds: randomIds };
-                          }
-                          setResolvedEndpoint(resolved);
-                          setRestaurants([]);
-                          setActiveChips([]);
-                          setUserLocation(null);
-                        }
-                      }}
-                      className="shrink-0 flex items-center gap-2 px-4 py-2.5 bg-white rounded-xl border border-orange-200 text-sm text-gray-700 shadow-sm hover:border-orange-400 hover:shadow-md transition-all active:scale-95"
-                    >
-                      {genre && <span className="text-lg">{genre.icon}</span>}
-                      <span className="font-medium">{hint}</span>
-                    </button>
-                  );
-                })}
-              </div>
             </div>
           )}
 

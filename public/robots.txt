@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://konya-no-kibun.vercel.app/sitemap.xml

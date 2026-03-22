@@ -36,6 +36,11 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <head>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7124944646519570"
+          crossOrigin="anonymous"
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"

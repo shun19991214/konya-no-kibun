@@ -75,7 +75,8 @@ export default function Home() {
       >
         <Link
           href="/play"
-          className="inline-block px-10 py-4 bg-white text-orange-500 font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 cta-glow"
+          className="inline-block px-10 py-4 bg-white text-orange-500 font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 animate-pulse-glow"
+          style={{ boxShadow: "0 0 30px rgba(249, 115, 22, 0.4)" }}
         >
           診断スタート →
         </Link>

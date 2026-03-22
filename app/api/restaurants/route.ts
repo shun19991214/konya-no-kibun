@@ -3,6 +3,21 @@ import { NextRequest, NextResponse } from "next/server";
 const HOTPEPPER_API_KEY = process.env.HOTPEPPER_API_KEY || "";
 const BASE_URL = "http://webservice.recruit.co.jp/hotpepper/gourmet/v1/";
 
+// v2対応: 予算コード、Q4チップフラグ（private_room, free_drink等）をサポート
+// 5段階フォールバック: keyword→条件→エリア→ジャンルの段階的緩和
+
+const FLAG_PARAMS = [
+  "private_room",
+  "free_drink",
+  "free_food",
+  "midnight",
+  "lunch",
+  "card",
+  "non_smoking",
+  "parking",
+  "child",
+] as const;
+
 function getExpandedRanges(initial: number): number[] {
   const ranges = [initial];
   for (let r = initial + 1; r <= 5; r++) ranges.push(r);
@@ -57,6 +72,29 @@ function normalizeShop(shop: HotPepperShop) {
   };
 }
 
+async function searchHotpepper(
+  baseParams: URLSearchParams
+): Promise<{ shops: HotPepperShop[]; total: number } | null> {
+  try {
+    const res = await fetch(`${BASE_URL}?${baseParams.toString()}`);
+    const data = await res.json();
+
+    if (data.results?.error) {
+      const errorCode = data.results.error[0]?.code;
+      if (errorCode === 2000) throw new Error("API認証エラー");
+      return null;
+    }
+
+    return {
+      shops: data.results?.shop || [],
+      total: data.results?.results_available || 0,
+    };
+  } catch (e) {
+    if (e instanceof Error && e.message === "API認証エラー") throw e;
+    return null;
+  }
+}
+
 export async function GET(request: NextRequest) {
   if (!HOTPEPPER_API_KEY) {
     return NextResponse.json(
@@ -70,9 +108,10 @@ export async function GET(request: NextRequest) {
   const lng = searchParams.get("lng");
   const genre = searchParams.get("genre");
   const keyword = searchParams.get("keyword") || "";
+  const budget = searchParams.get("budget") || "";
   const initialRange = parseInt(searchParams.get("range") || "3", 10);
+  const count = searchParams.get("count") || "5";
 
-  // Either lat/lng or keyword is required
   if (!genre && !keyword) {
     return NextResponse.json(
       { error: "genre or keyword is required" },
@@ -80,14 +119,23 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // フラグパラメータを収集
+  const activeFlags: Record<string, string> = {};
+  for (const flag of FLAG_PARAMS) {
+    const val = searchParams.get(flag);
+    if (val === "1") activeFlags[flag] = "1";
+  }
+
   const ranges = lat && lng ? getExpandedRanges(initialRange) : [5];
 
+  // === 5段階フォールバック ===
   for (const range of ranges) {
+    // Step 1: 全条件で検索
     const params = new URLSearchParams({
       key: HOTPEPPER_API_KEY,
       format: "json",
-      count: "10",
-      order: "4", // recommended
+      count,
+      order: "4",
     });
 
     if (lat && lng) {
@@ -95,40 +143,68 @@ export async function GET(request: NextRequest) {
       params.set("lng", lng);
       params.set("range", String(range));
     }
-    // keyword がある場合は keyword のみで検索（genre との AND 検索は結果が極端に減るため）
-    // keyword がない場合は genre コードで検索
-    if (keyword) {
-      params.set("keyword", keyword);
-    } else if (genre) {
-      params.set("genre", genre);
+    if (keyword) params.set("keyword", keyword);
+    else if (genre) params.set("genre", genre);
+    if (budget) params.set("budget", budget);
+
+    for (const [k, v] of Object.entries(activeFlags)) {
+      params.set(k, v);
     }
 
     try {
-      const res = await fetch(`${BASE_URL}?${params.toString()}`);
-      const data = await res.json();
-
-      // ホットペッパーAPIはエラー時もHTTP 200を返すため、レスポンス内容でエラー判定
-      if (data.results?.error) {
-        const errorCode = data.results.error[0]?.code;
-        if (errorCode === 2000) {
-          return NextResponse.json(
-            { error: "API認証エラー" },
-            { status: 401 }
-          );
-        }
-        continue;
-      }
-
-      const shops: HotPepperShop[] = data.results?.shop || [];
-
-      if (shops.length >= 3 || range === ranges[ranges.length - 1]) {
+      const result = await searchHotpepper(params);
+      if (result && result.shops.length >= 3) {
         return NextResponse.json({
-          restaurants: shops.map(normalizeShop),
+          restaurants: result.shops.map(normalizeShop),
           range,
-          total: data.results?.results_available || 0,
+          total: result.total,
         });
       }
-    } catch {
+
+      // Step 2: keyword を除去して再検索
+      if (keyword && genre) {
+        const params2 = new URLSearchParams(params);
+        params2.delete("keyword");
+        params2.set("genre", genre);
+        const result2 = await searchHotpepper(params2);
+        if (result2 && result2.shops.length >= 3) {
+          return NextResponse.json({
+            restaurants: result2.shops.map(normalizeShop),
+            range,
+            total: result2.total,
+            relaxed: "keyword",
+          });
+        }
+      }
+
+      // Step 3: Q4フラグを除去して再検索
+      if (Object.keys(activeFlags).length > 0) {
+        const params3 = new URLSearchParams(params);
+        for (const flag of FLAG_PARAMS) params3.delete(flag);
+        const result3 = await searchHotpepper(params3);
+        if (result3 && result3.shops.length >= 3) {
+          return NextResponse.json({
+            restaurants: result3.shops.map(normalizeShop),
+            range,
+            total: result3.total,
+            relaxed: "flags",
+          });
+        }
+      }
+
+      // 最大range到達時は結果が少なくても返す
+      if (range === ranges[ranges.length - 1]) {
+        const finalResult = result || { shops: [], total: 0 };
+        return NextResponse.json({
+          restaurants: finalResult.shops.map(normalizeShop),
+          range,
+          total: finalResult.total,
+        });
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message === "API認証エラー") {
+        return NextResponse.json({ error: "API認証エラー" }, { status: 401 });
+      }
       continue;
     }
   }

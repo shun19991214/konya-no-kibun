@@ -35,7 +35,7 @@ export default function Image() {
           こんやのきぶん
         </div>
         <div style={{ fontSize: 32, color: "rgba(255,255,255,0.7)" }}>
-          5つの質問で、今夜の外食先が決まる
+          気分で決まる夜ごはん
         </div>
       </div>
     ),

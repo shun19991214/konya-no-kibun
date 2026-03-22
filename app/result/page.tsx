@@ -186,35 +186,37 @@ function ResultContent() {
 
         <div className="relative max-w-md mx-auto text-center px-6">
           <motion.p
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0.5 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
             className="text-sm text-white/50 mb-4 tracking-wide"
           >
             あなたの今夜の気分は...
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.5 }}
+            initial={{ opacity: 0.5, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
+            transition={{ duration: 0.3, type: "spring", stiffness: 200 }}
             className="text-7xl mb-4"
           >
             {topGenres[0].emoji}
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-4xl md:text-5xl font-heading font-bold text-white mb-2 drop-shadow-md"
+            initial={{ opacity: 0.5 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1, duration: 0.3 }}
+            className="font-heading font-bold text-white mb-2 drop-shadow-md whitespace-nowrap"
+            style={{ fontSize: "clamp(1.75rem, 8vw, 3rem)" }}
           >
             {topGenres[0].name}
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0 }}
+            initial={{ opacity: 0.3 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
             className="text-white/60 text-sm"
           >
             {topGenres[0].description}
@@ -267,6 +269,10 @@ function ResultContent() {
             isLoading={isLoading}
             error={error}
             userLocation={userLocation}
+            onResearch={() => {
+              setShowRestaurants(false);
+              setRestaurants([]);
+            }}
           />
         )}
 

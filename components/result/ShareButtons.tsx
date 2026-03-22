@@ -12,7 +12,7 @@ export function ShareButtons({ genre }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
 
   const url = typeof window !== "undefined" ? window.location.href : "";
-  const shareText = `今夜の気分は「${genre.name}${genre.emoji}」でした！\n\nあなたも診断してみて！\n#こんやのきぶん #きぶんで夜ごはん`;
+  const shareText = `今夜の気分は「${genre.name}${genre.emoji}」でした！\n${genre.description}\n\nあなたも診断してみて！\n#こんやのきぶん #きぶんで夜ごはん`;
 
   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(url)}`;
   const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}`;

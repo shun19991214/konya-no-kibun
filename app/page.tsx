@@ -87,8 +87,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== Result teaser (blurred) ===== */}
-      <section className="py-14 px-6 bg-[#FFF8F0]">
+      {/* ===== Result teaser ===== */}
+      <section className="py-10 px-6 bg-[#FFF8F0]">
         <div className="max-w-md mx-auto">
           <p className="text-center text-sm text-[#8B6F61] mb-6 font-medium">
             こんな結果が出るかも...？
@@ -125,7 +125,7 @@ export default function Home() {
       </section>
 
       {/* ===== How it works ===== */}
-      <section className="py-14 px-6 bg-gradient-to-b from-[#FFF8F0] to-[#FFF0E6]">
+      <section className="py-10 px-6 bg-gradient-to-b from-[#FFF8F0] to-[#FFF0E6]">
         <div className="max-w-md mx-auto">
           <h2 className="text-center font-heading font-bold text-xl text-[#3d2e1f] mb-10">
             使い方はかんたん
@@ -188,10 +188,10 @@ export default function Home() {
             {GENRES.map((genre) => (
               <div
                 key={genre.id}
-                className="flex flex-col items-center gap-1 py-3 px-1 rounded-xl bg-white/60 border border-orange-50 text-center hover:bg-white hover:shadow-sm transition-all"
+                className="flex flex-col items-center justify-center gap-1 py-3 px-1 rounded-xl bg-white/60 border border-orange-50 text-center hover:bg-white hover:shadow-sm transition-all min-h-[72px]"
               >
                 <span className="text-2xl">{genre.emoji}</span>
-                <span className="text-[10px] font-medium text-[#5C3D2E] leading-tight">
+                <span className="text-[10px] font-medium text-[#5C3D2E] leading-tight line-clamp-2">
                   {genre.name}
                 </span>
               </div>

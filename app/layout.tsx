@@ -6,6 +6,9 @@ export const metadata: Metadata = {
     icon: "/icon.svg",
     apple: "/icon.svg",
   },
+  other: {
+    "theme-color": "#2D2B55",
+  },
   title: "こんやのきぶん | 気分で決まる夜ごはん",
   description:
     "夜ごはんが決まらないあなたへ。6つの質問に答えるだけで、今の気分にぴったりの外食ジャンルと近くのお店を提案します。",

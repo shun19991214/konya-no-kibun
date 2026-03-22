@@ -67,6 +67,11 @@ export function GenreCard({ genre, rank, onSelect, isSelected }: GenreCardProps)
           <p className="text-sm text-[#8B6F61] mt-0.5">
             {genre.description}
           </p>
+          {!isMain && !isSelected && (
+            <p className="text-[10px] text-[#FF6B35]/60 mt-1">
+              タップでお店を切り替え →
+            </p>
+          )}
         </div>
       </div>
     </motion.button>

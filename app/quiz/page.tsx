@@ -35,6 +35,8 @@ export default function QuizPage() {
         cf: String(scores.casualFormal),
         ad: String(scores.adventurous),
         range: String(range),
+        q1: answers[1] || "",
+        q4: answers[4] || "",
       });
       router.push(`/result?${params.toString()}`);
     }

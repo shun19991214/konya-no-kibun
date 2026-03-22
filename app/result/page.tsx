@@ -6,12 +6,14 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { RotateCcw } from "lucide-react";
 import type { AxisScores, Genre, GenreId, Restaurant } from "@/types";
-import { getTopThreeWithHistory } from "@/data/scoring";
+import { getTopThreeWithContext } from "@/data/scoring";
 import { GENRE_MAP } from "@/data/genres";
 import { GenreCard } from "@/components/result/GenreCard";
 import { ShareButtons } from "@/components/result/ShareButtons";
 import { LocationPrompt } from "@/components/result/LocationPrompt";
 import { RestaurantList } from "@/components/result/RestaurantList";
+import { getPersonalizedReason } from "@/data/personalize";
+import { ResultImageCard } from "@/components/result/ResultImageCard";
 
 function saveHistory(topGenres: GenreId[]) {
   try {
@@ -46,6 +48,11 @@ function ResultContent() {
     adventurous: Number(searchParams.get("ad")) || 0,
   };
   const range = Number(searchParams.get("range")) || 3;
+  const quizAnswers: Record<number, string> = {};
+  const q1 = searchParams.get("q1");
+  const q4 = searchParams.get("q4");
+  if (q1) quizAnswers[1] = q1;
+  if (q4) quizAnswers[4] = q4;
 
   // Compute results client-side only to avoid hydration mismatch
   useEffect(() => {
@@ -62,7 +69,7 @@ function ResultContent() {
       // ignore
     }
 
-    const topGenreIds = getTopThreeWithHistory(scores, recentGenres);
+    const topGenreIds = getTopThreeWithContext(scores, quizAnswers, recentGenres);
     const genres = topGenreIds.map((id) => GENRE_MAP[id]).filter(Boolean);
     setTopGenres(genres);
     if (genres.length > 0) {
@@ -219,7 +226,8 @@ function ResultContent() {
             transition={{ delay: 0.2, duration: 0.3 }}
             className="text-white/60 text-sm"
           >
-            {topGenres[0].description}
+            {getPersonalizedReason(topGenres[0].id, quizAnswers) ||
+              topGenres[0].description}
           </motion.p>
         </div>
       </section>
@@ -240,6 +248,14 @@ function ResultContent() {
               isSelected={selectedGenre?.id === genre.id}
             />
           ))}
+        </div>
+
+        {/* Result image save */}
+        <div className="mb-8">
+          <ResultImageCard
+            topGenres={topGenres}
+            personalizedReason={getPersonalizedReason(topGenres[0].id, quizAnswers)}
+          />
         </div>
 
         {/* Share */}

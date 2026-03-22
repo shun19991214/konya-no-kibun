@@ -132,6 +132,20 @@ export function RestaurantCard({ restaurant, index, userLocation }: RestaurantCa
             </p>
           )}
         </div>
+
+        {/* Google Maps link */}
+        {restaurant.lat && restaurant.lng && (
+          <a
+            href={`https://www.google.com/maps/dir/?api=1&destination=${restaurant.lat},${restaurant.lng}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center justify-center gap-1.5 py-2 mt-1 rounded-lg bg-[#FFF8F0] text-[11px] font-medium text-[#3d2e1f] hover:bg-[#FF6B35]/10 transition-colors"
+          >
+            <MapPin size={12} className="text-[#FF6B35]" />
+            Google マップで経路を見る
+          </a>
+        )}
       </div>
     </motion.a>
   );

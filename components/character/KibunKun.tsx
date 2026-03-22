@@ -22,7 +22,7 @@ type Props = {
 };
 
 const IMAGE_MAP: Record<KibunExpression, string> = {
-  normal: "/character/kibun-normal.webp",
+  normal: "/character/kibun-normal.svg",
   thinking: "/character/kibun-thinking.webp",
   excited: "/character/kibun-excited.webp",
   confident: "/character/kibun-confident.webp",

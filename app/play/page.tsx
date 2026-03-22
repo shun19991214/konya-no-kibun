@@ -474,45 +474,7 @@ export default function PlayPage() {
         </section>
 
         <section className="max-w-md mx-auto px-6 -mt-8 relative z-10">
-          {/* Sibling suggestions — moved up, right after hero */}
-          {resolvedEndpoint.siblingHint && resolvedEndpoint.siblingHint.length > 0 && (
-            <div className="mb-6 p-4 bg-orange-50 rounded-2xl border border-orange-100">
-              <div className="flex items-center gap-2 mb-3">
-                <KibunKun expression="excited" size={56} />
-                <p className="text-sm font-medium text-gray-700">こっちもアリかも！</p>
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {resolvedEndpoint.siblingHint.map((hint) => {
-                  const ep = findEndpointByLabel(hint);
-                  const genre = ep ? GENRE_MAP[ep.genreIds[0]] : null;
-                  return (
-                    <button
-                      key={hint}
-                      onClick={() => {
-                        if (ep) {
-                          let resolved = ep;
-                          if (resolved.genreIds.includes("__random__")) {
-                            const randomIds = resolveRandomGenre(resolved.resultLabel);
-                            resolved = { ...resolved, genreIds: randomIds };
-                          }
-                          setResolvedEndpoint(resolved);
-                          setRestaurants([]);
-                          setActiveChips([]);
-                          setUserLocation(null);
-                        }
-                      }}
-                      className="shrink-0 flex items-center gap-2 px-4 py-2.5 bg-white rounded-xl border border-orange-200 text-sm text-gray-700 shadow-sm hover:border-orange-400 hover:shadow-md transition-all active:scale-95"
-                    >
-                      {genre && <span className="text-lg">{genre.icon}</span>}
-                      <span className="font-medium">{hint}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Retry — also here near the top */}
+          {/* Retry — near the top */}
           <div className="flex justify-center mb-6">
             <button
               onClick={handleReset}
@@ -674,6 +636,44 @@ export default function PlayPage() {
             <div className="text-center py-8">
               <KibunKun expression="thinking" size={100} speech="うーん、近くにないかも…" />
               <p className="text-gray-400 text-xs mt-4">検索範囲を広げてみてください</p>
+            </div>
+          )}
+
+          {/* Siblings — bottom position */}
+          {resolvedEndpoint.siblingHint && resolvedEndpoint.siblingHint.length > 0 && (
+            <div className="mt-8 p-4 bg-orange-50 rounded-2xl border border-orange-100">
+              <div className="flex items-center gap-2 mb-3">
+                <KibunKun expression="excited" size={56} />
+                <p className="text-sm font-medium text-gray-700">こっちもどうかな？</p>
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {resolvedEndpoint.siblingHint.map((hint) => {
+                  const ep = findEndpointByLabel(hint);
+                  const genre = ep ? GENRE_MAP[ep.genreIds[0]] : null;
+                  return (
+                    <button
+                      key={hint}
+                      onClick={() => {
+                        if (ep) {
+                          let resolved = ep;
+                          if (resolved.genreIds.includes("__random__")) {
+                            const randomIds = resolveRandomGenre(resolved.resultLabel);
+                            resolved = { ...resolved, genreIds: randomIds };
+                          }
+                          setResolvedEndpoint(resolved);
+                          setRestaurants([]);
+                          setActiveChips([]);
+                          setUserLocation(null);
+                        }
+                      }}
+                      className="shrink-0 flex items-center gap-2 px-4 py-2.5 bg-white rounded-xl border border-orange-200 text-sm text-gray-700 shadow-sm hover:border-orange-400 hover:shadow-md transition-all active:scale-95"
+                    >
+                      {genre && <span className="text-lg">{genre.icon}</span>}
+                      <span className="font-medium">{hint}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
 

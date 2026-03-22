@@ -19,6 +19,7 @@ type Props = {
   speech?: string;
   className?: string;
   animate?: AnimationType;
+  glow?: boolean; // 背景から浮かび上がらせるグロー
 };
 
 const IMAGE_MAP: Record<KibunExpression, string> = {
@@ -32,32 +33,24 @@ const IMAGE_MAP: Record<KibunExpression, string> = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const BODY_ANIMATIONS: Record<AnimationType, { animate: any; transition: any }> = {
   float: {
-    animate: { y: [0, -8, 0] },
-    transition: {
-      duration: 3,
-      repeat: Infinity,
-      ease: "easeInOut" as const,
-    },
+    animate: { y: [0, -10, 0] },
+    transition: { duration: 3, repeat: Infinity, ease: "easeInOut" as const },
   },
   bounce: {
-    animate: { y: [0, -20, 0], scale: [1, 1.1, 1] },
-    transition: { duration: 0.5, ease: "easeOut" as const },
+    animate: { y: [0, -15, 0], scale: [1, 1.08, 1] },
+    transition: { duration: 0.4, ease: "easeOut" as const },
   },
   growConfident: {
-    animate: { scale: [1, 1.3, 1.2] },
-    transition: { duration: 0.8, ease: "easeOut" as const },
+    animate: { scale: [1, 1.2, 1.15] },
+    transition: { duration: 0.6, ease: "easeOut" as const },
   },
   celebrate: {
-    animate: { scale: [1, 1.4, 1.1, 1.2], rotate: [0, -10, 10, 0] },
-    transition: { duration: 0.8, ease: "easeOut" as const },
+    animate: { scale: [1, 1.3, 1.1, 1.15], rotate: [0, -8, 8, 0] },
+    transition: { duration: 0.7, ease: "easeOut" as const },
   },
   analyzing: {
-    animate: { x: [-3, 3, -3] },
-    transition: {
-      duration: 0.2,
-      repeat: Infinity,
-      ease: "linear" as const,
-    },
+    animate: { x: [-4, 4, -4] },
+    transition: { duration: 0.2, repeat: Infinity, ease: "linear" as const },
   },
   shrink: {
     animate: { scale: [1, 0.85] },
@@ -71,43 +64,71 @@ const BODY_ANIMATIONS: Record<AnimationType, { animate: any; transition: any }> 
 
 export function KibunKun({
   expression = "normal",
-  size = 80,
+  size = 120,
   speech,
   className,
   animate = "none",
+  glow = false,
 }: Props) {
   const bodyAnim = BODY_ANIMATIONS[animate];
 
   return (
-    <div
-      className={`relative inline-flex flex-col items-center ${className ?? ""}`}
-    >
-      {/* 吹き出し */}
+    <div className={`relative inline-flex flex-col items-center ${className ?? ""}`}>
+      {/* 吹き出し — きぶんくんの世界観に合わせた暖色デザイン */}
       <AnimatePresence mode="wait">
         {speech && (
           <motion.div
             key={speech}
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            transition={{ duration: 0.3 }}
-            className="mb-2 px-4 py-2 bg-white rounded-2xl shadow-md text-sm font-medium text-gray-800 max-w-50 text-center relative"
+            initial={{ opacity: 0, y: 8, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -5, scale: 0.95 }}
+            transition={{ duration: 0.3, type: "spring", stiffness: 300, damping: 20 }}
+            className="mb-3 px-5 py-2.5 rounded-2xl shadow-lg text-center relative max-w-56"
+            style={{
+              background: "linear-gradient(135deg, #FFF9F0 0%, #FFF0E0 100%)",
+              border: "2px solid #F5C54240",
+              fontFamily: "'Zen Maru Gothic', sans-serif",
+            }}
           >
-            {speech}
-            <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white transform rotate-45" />
+            <span className="text-sm font-bold text-gray-700">{speech}</span>
+            {/* 吹き出しの尻尾 — 大きめで丸みのある形 */}
+            <div
+              className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 rotate-45 rounded-sm"
+              style={{
+                background: "linear-gradient(135deg, #FFF0E0 0%, #FFF0E0 100%)",
+                borderRight: "2px solid #F5C54240",
+                borderBottom: "2px solid #F5C54240",
+              }}
+            />
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* キャラクター本体 */}
-      <motion.div animate={bodyAnim.animate} transition={bodyAnim.transition}>
+      <motion.div
+        animate={bodyAnim.animate}
+        transition={bodyAnim.transition}
+        className="relative"
+      >
+        {/* グロー（背景から浮かび上がらせる光彩） */}
+        {glow && (
+          <div
+            className="absolute inset-0 rounded-full blur-2xl opacity-40"
+            style={{
+              background: "radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(245,197,66,0.3) 50%, transparent 70%)",
+              transform: "scale(1.3)",
+            }}
+          />
+        )}
+
         <AnimatePresence mode="wait">
           <motion.div
             key={expression}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0, scale: 0.7, rotate: -5 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            exit={{ opacity: 0, scale: 0.8, rotate: 5 }}
+            transition={{ duration: 0.35, type: "spring", stiffness: 200, damping: 15 }}
+            className="relative"
           >
             <Image
               src={IMAGE_MAP[expression]}

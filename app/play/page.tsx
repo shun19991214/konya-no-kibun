@@ -285,7 +285,7 @@ export default function PlayPage() {
           >
             <KibunKun
               expression={currentNode.kibunExpression}
-              size={80}
+              size={140}
               speech={currentNode.kibunSpeech}
               animate="bounce"
             />
@@ -370,7 +370,7 @@ export default function PlayPage() {
       <main className="min-h-screen flex flex-col items-center justify-center"
         style={{ background: "linear-gradient(180deg, #2D2B55 0%, #3d2b6b 40%, #6b3a5c 70%, #c4563a 100%)" }}
       >
-        <KibunKun expression="thinking" size={120} speech="あなたの気分を解析中..." animate="analyzing" />
+        <KibunKun expression="thinking" size={150} speech="あなたの気分を解析中..." animate="analyzing" glow />
         <div className="mt-8 space-y-3">
           {labels.map((l, i) => (
             <motion.div
@@ -399,7 +399,7 @@ export default function PlayPage() {
           transition={{ delay: 2.0, type: "spring", stiffness: 200 }}
           className="mt-8"
         >
-          <KibunKun expression="confident" size={100} speech="わかりました！" animate="growConfident" />
+          <KibunKun expression="confident" size={130} speech="わかりました！" animate="growConfident" glow />
         </motion.div>
       </main>
     );
@@ -417,7 +417,7 @@ export default function PlayPage() {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, type: "spring" }}
         >
-          <KibunKun expression="tada" size={140} speech="今夜はこれでしょ！" animate="celebrate" />
+          <KibunKun expression="tada" size={170} speech="今夜はこれでしょ！" animate="celebrate" glow />
         </motion.div>
 
         <motion.div
@@ -462,7 +462,7 @@ export default function PlayPage() {
           className="relative pt-8 pb-20 text-center"
           style={{ background: "linear-gradient(180deg, #2D2B55 0%, #3d2b6b 30%, #6b3a5c 60%, #c4563a 85%, #FFF8F0 100%)" }}
         >
-          <KibunKun expression="tada" size={110} speech="今夜はこれでしょ！" />
+          <KibunKun expression="tada" size={130} speech="今夜はこれでしょ！" glow />
           <div className="text-6xl mt-3">{firstGenre?.icon || "🍽️"}</div>
           <h1
             className="text-3xl font-bold text-white mt-3 drop-shadow-md"
@@ -478,7 +478,7 @@ export default function PlayPage() {
           {resolvedEndpoint.siblingHint && resolvedEndpoint.siblingHint.length > 0 && (
             <div className="mb-6 p-4 bg-orange-50 rounded-2xl border border-orange-100">
               <div className="flex items-center gap-2 mb-3">
-                <KibunKun expression="excited" size={36} />
+                <KibunKun expression="excited" size={56} />
                 <p className="text-sm font-medium text-gray-700">こっちもアリかも！</p>
               </div>
               <div className="flex gap-2 overflow-x-auto pb-1">
@@ -672,7 +672,7 @@ export default function PlayPage() {
 
           {!isSearching && userLocation && restaurants.length === 0 && (
             <div className="text-center py-8">
-              <KibunKun expression="thinking" size={64} speech="うーん、近くにないかも…" />
+              <KibunKun expression="thinking" size={100} speech="うーん、近くにないかも…" />
               <p className="text-gray-400 text-xs mt-4">検索範囲を広げてみてください</p>
             </div>
           )}

@@ -14,22 +14,39 @@ import type { EndpointNode, OptionNode, Restaurant, Q4Chip } from "@/types";
 // ===== Phase types =====
 type Phase = "quiz" | "analyzing" | "reveal" | "detail";
 
-// ===== Question themes (route-specific background colors) =====
+// ===== Question themes (mood-specific background colors) =====
 const QUESTION_THEMES: Record<string, { gradient: string; accent: string }> = {
+  // Q1: 共通（夕暮れオレンジ）
   q1: { gradient: "from-orange-50 to-amber-50", accent: "#F97316" },
-  "q1-meat-q2": { gradient: "from-red-50 to-orange-50", accent: "#EF4444" },
-  "q2-meat-yakiniku-q3": { gradient: "from-red-50 to-orange-50", accent: "#EF4444" },
-  "q2-meat-steak-q3": { gradient: "from-red-50 to-orange-50", accent: "#EF4444" },
-  "q1-japanese-q2": { gradient: "from-emerald-50 to-teal-50", accent: "#10B981" },
-  "q2-japanese-sushi-q3": { gradient: "from-emerald-50 to-teal-50", accent: "#10B981" },
-  "q1-noodle-q2": { gradient: "from-yellow-50 to-amber-50", accent: "#F59E0B" },
-  "q2-noodle-ramen-q3": { gradient: "from-yellow-50 to-amber-50", accent: "#F59E0B" },
-  "q1-world-q2": { gradient: "from-blue-50 to-indigo-50", accent: "#6366F1" },
-  "q2-world-italian-q3": { gradient: "from-blue-50 to-indigo-50", accent: "#6366F1" },
-  "q2-world-asian-q3": { gradient: "from-blue-50 to-indigo-50", accent: "#6366F1" },
-  "q1-drink-q2": { gradient: "from-amber-50 to-yellow-50", accent: "#D97706" },
-  "q1-light-q2": { gradient: "from-green-50 to-emerald-50", accent: "#22C55E" },
-  "q1-omakase-q2": { gradient: "from-purple-50 to-pink-50", accent: "#A855F7" },
+  // Q2: 一日の気分ごとに色を変える
+  "q1-exhausted-q2": { gradient: "from-blue-50 to-indigo-50", accent: "#6366F1" },
+  "q1-hyper-q2": { gradient: "from-red-50 to-orange-50", accent: "#EF4444" },
+  "q1-normal-q2": { gradient: "from-emerald-50 to-teal-50", accent: "#10B981" },
+  "q1-stressed-q2": { gradient: "from-purple-50 to-pink-50", accent: "#A855F7" },
+  // Q3: Q2の色を引き継ぎ
+  "q2-exhausted-solo-q3": { gradient: "from-blue-50 to-indigo-50", accent: "#6366F1" },
+  "q2-exhausted-partner-q3": { gradient: "from-blue-50 to-indigo-50", accent: "#6366F1" },
+  "q2-exhausted-friends-q3": { gradient: "from-blue-50 to-indigo-50", accent: "#6366F1" },
+  "q2-exhausted-family-q3": { gradient: "from-blue-50 to-indigo-50", accent: "#6366F1" },
+  "q2-hyper-solo-q3": { gradient: "from-red-50 to-orange-50", accent: "#EF4444" },
+  "q2-hyper-partner-q3": { gradient: "from-red-50 to-orange-50", accent: "#EF4444" },
+  "q2-hyper-friends-q3": { gradient: "from-red-50 to-orange-50", accent: "#EF4444" },
+  "q2-hyper-family-q3": { gradient: "from-red-50 to-orange-50", accent: "#EF4444" },
+  "q2-normal-solo-q3": { gradient: "from-emerald-50 to-teal-50", accent: "#10B981" },
+  "q2-normal-partner-q3": { gradient: "from-emerald-50 to-teal-50", accent: "#10B981" },
+  "q2-normal-friends-q3": { gradient: "from-emerald-50 to-teal-50", accent: "#10B981" },
+  "q2-normal-family-q3": { gradient: "from-emerald-50 to-teal-50", accent: "#10B981" },
+  "q2-stressed-solo-q3": { gradient: "from-purple-50 to-pink-50", accent: "#A855F7" },
+  "q2-stressed-partner-q3": { gradient: "from-purple-50 to-pink-50", accent: "#A855F7" },
+  "q2-stressed-friends-q3": { gradient: "from-purple-50 to-pink-50", accent: "#A855F7" },
+  "q2-stressed-family-q3": { gradient: "from-purple-50 to-pink-50", accent: "#A855F7" },
+  // Q4: 五感の連想（ゴールドに統一＝「もうすぐ当てるよ」感）
+  "q3-warm-solo-q4": { gradient: "from-yellow-50 to-amber-50", accent: "#F59E0B" },
+  "q3-reward-solo-q4": { gradient: "from-yellow-50 to-amber-50", accent: "#F59E0B" },
+  "q3-simple-solo-q4": { gradient: "from-yellow-50 to-amber-50", accent: "#F59E0B" },
+  "q3-hyper-friends-cheers-q4": { gradient: "from-yellow-50 to-amber-50", accent: "#F59E0B" },
+  "q3-normal-solo-curious-q4": { gradient: "from-yellow-50 to-amber-50", accent: "#F59E0B" },
+  "q3-stressed-solo-destroy-q4": { gradient: "from-yellow-50 to-amber-50", accent: "#F59E0B" },
 };
 
 function getTheme(nodeId: string) {
@@ -188,9 +205,9 @@ export default function PlayPage() {
           <div className="w-10" />
         </header>
 
-        {/* Progress dots */}
+        {/* Progress dots — fixed 4 steps */}
         <div className="flex justify-center gap-1.5 py-2">
-          {Array.from({ length: Math.max(3, questionDepth + 1) }).map((_, i) => (
+          {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
               className={`h-2 rounded-full transition-all duration-500 ${

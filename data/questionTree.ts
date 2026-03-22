@@ -1,577 +1,617 @@
 import type { QuestionNode } from "@/types";
 import { Q4_CHIPS } from "./q4chips";
 
-const C = Q4_CHIPS;
+// Q4チップのショートハンド
+const h = Q4_CHIPS.private_room;       // 個室あり
+const f = Q4_CHIPS.card_ok;            // カード可
+const D = Q4_CHIPS.non_smoking;        // 禁煙席あり
+const y = Q4_CHIPS.all_you_can_drink;  // 飲み放題
+const x = Q4_CHIPS.late_night;         // 23時以降OK
+const k = Q4_CHIPS.lunch;             // ランチあり
+const j = Q4_CHIPS.parking;           // 駐車場あり
+
+// ============================================================
+// 質問ツリー v3: 間接質問方式
+//
+// 設計思想:
+// 旧: 「何が食べたい？」→「どの肉？」→「予算は？」（直接質問＝答え丸わかり）
+// 新: 「今日はどんな一日だった？」→「誰と？」→「気持ちは？」→「ピンとくるのは？」
+//     （間接質問＝推論の飛躍が生まれる）
+//
+// 固定4ステップ:
+// Q1: エネルギーレベル → ガッツリ系 or 軽め系
+// Q2: シチュエーション → 客単価帯・雰囲気
+// Q3: 感情・モード → 和洋中・味の方向性
+// Q4: 五感の連想 → 最終ジャンル確定
+// ============================================================
 
 export const QUESTION_TREE: Record<string, QuestionNode> = {
-  // ==================== Q1 ====================
+
+  // ============================
+  // Q1: 今日はどんな一日だった？
+  // ============================
   q1: {
     id: "q1",
-    question: "今夜はどんな気分？",
+    question: "今日はどんな一日だった？",
     subtitle: "直感で選んでね",
     kibunExpression: "thinking",
-    kibunSpeech: "うーん、今夜は何が食べたい？",
+    kibunSpeech: "うーん、今日はどんな日だった？",
     options: [
-      { id: "meat", label: "ガッツリお肉！", emoji: "🥩", next: "q1-meat-q2" },
-      { id: "japanese", label: "和食で落ち着きたい", emoji: "🍱", next: "q1-japanese-q2" },
-      { id: "noodle", label: "麺をすすりたい", emoji: "🍜", next: "q1-noodle-q2" },
-      { id: "world", label: "海外気分を味わいたい", emoji: "🌍", next: "q1-world-q2" },
-      { id: "drink", label: "とりあえず飲みたい", emoji: "🍻", next: "q1-drink-q2" },
-      { id: "light", label: "軽めでいい", emoji: "🥗", next: "q1-light-q2" },
-      { id: "omakase", label: "おまかせで！", emoji: "🎲", next: "q1-omakase-q2" },
+      { id: "exhausted", label: "ヘトヘト…がんばった", emoji: "😮‍💨", next: "q1-exhausted-q2" },
+      { id: "hyper", label: "テンション高い！最高の日！", emoji: "🔥", next: "q1-hyper-q2" },
+      { id: "normal", label: "まあまあ、いつも通り", emoji: "😌", next: "q1-normal-q2" },
+      { id: "stressed", label: "モヤモヤ、ストレスたまった", emoji: "😤", next: "q1-stressed-q2" },
     ],
   },
 
-  // ==================== Q2: 肉ルート ====================
-  "q1-meat-q2": {
-    id: "q1-meat-q2",
-    question: "どんなお肉の気分？",
-    subtitle: "肉汁が溢れるのを想像して",
+  // ============================
+  // Q2: 誰と食べる？（Q1の各分岐）
+  // ============================
+
+  // --- Q1:ヘトヘト → Q2 ---
+  "q1-exhausted-q2": {
+    id: "q1-exhausted-q2",
+    question: "今夜、誰と食べる？",
+    subtitle: "一緒にいる人を想像して",
     kibunExpression: "excited",
-    kibunSpeech: "お肉！いいね〜！",
+    kibunSpeech: "おつかれさま！えらい！",
     options: [
-      { id: "yakiniku", label: "自分で焼きたい！焼肉", emoji: "🔥", next: "q2-meat-yakiniku-q3" },
-      { id: "steak", label: "ドーンとステーキ・ハンバーグ", emoji: "🥩", next: "q2-meat-steak-q3" },
+      { id: "solo", label: "ひとりで静かに", emoji: "🧘", next: "q2-exhausted-solo-q3" },
+      { id: "partner", label: "パートナーと", emoji: "💑", next: "q2-exhausted-partner-q3" },
+      { id: "friends", label: "友達・仲間と", emoji: "👯", next: "q2-exhausted-friends-q3" },
+      { id: "family", label: "家族と", emoji: "👨‍👩‍👧", next: "q2-exhausted-family-q3" },
+    ],
+  },
+
+  // --- Q1:テンション高い → Q2 ---
+  "q1-hyper-q2": {
+    id: "q1-hyper-q2",
+    question: "今夜、誰と食べる？",
+    subtitle: "このテンション、誰と共有する？",
+    kibunExpression: "excited",
+    kibunSpeech: "いい日だったんだね！",
+    options: [
+      { id: "solo", label: "ひとりで自分にご褒美", emoji: "🏆", next: "q2-hyper-solo-q3" },
+      { id: "partner", label: "パートナーと特別な夜に", emoji: "💑", next: "q2-hyper-partner-q3" },
+      { id: "friends", label: "友達とワイワイ！", emoji: "🎉", next: "q2-hyper-friends-q3" },
+      { id: "family", label: "家族で楽しく", emoji: "👨‍👩‍👧", next: "q2-hyper-family-q3" },
+    ],
+  },
+
+  // --- Q1:いつも通り → Q2 ---
+  "q1-normal-q2": {
+    id: "q1-normal-q2",
+    question: "今夜、誰と食べる？",
+    subtitle: "今日の相手は？",
+    kibunExpression: "excited",
+    kibunSpeech: "なるほどなるほど〜",
+    options: [
+      { id: "solo", label: "ひとりでサクッと", emoji: "🙋", next: "q2-normal-solo-q3" },
+      { id: "partner", label: "パートナーと", emoji: "💑", next: "q2-normal-partner-q3" },
+      { id: "friends", label: "友達と", emoji: "👫", next: "q2-normal-friends-q3" },
+      { id: "family", label: "家族と", emoji: "👨‍👩‍👧", next: "q2-normal-family-q3" },
+    ],
+  },
+
+  // --- Q1:ストレス → Q2 ---
+  "q1-stressed-q2": {
+    id: "q1-stressed-q2",
+    question: "今夜、誰と食べる？",
+    subtitle: "そのモヤモヤ、どうする？",
+    kibunExpression: "excited",
+    kibunSpeech: "大丈夫、美味しいもの食べよ！",
+    options: [
+      { id: "solo", label: "ひとりで発散！", emoji: "💥", next: "q2-stressed-solo-q3" },
+      { id: "partner", label: "パートナーに愚痴りたい", emoji: "💑", next: "q2-stressed-partner-q3" },
+      { id: "friends", label: "友達とガヤガヤ忘れたい", emoji: "🍻", next: "q2-stressed-friends-q3" },
+      { id: "family", label: "家族の安心感がほしい", emoji: "🏠", next: "q2-stressed-family-q3" },
+    ],
+  },
+
+  // ============================
+  // Q3: 今の気持ちに近いのは？
+  // ============================
+
+  // --- ヘトヘト × ひとり → Q3 ---
+  "q2-exhausted-solo-q3": {
+    id: "q2-exhausted-solo-q3",
+    question: "今の気持ちに近いのは？",
+    subtitle: "心の声を聞いてみて",
+    kibunExpression: "confident",
+    kibunSpeech: "見えてきた…！",
+    options: [
+      { id: "warm", label: "あったかいもので癒されたい", emoji: "🫖", next: "q3-warm-solo-q4" },
+      { id: "reward", label: "自分にご褒美あげたい", emoji: "🎁", next: "q3-reward-solo-q4" },
+      { id: "simple", label: "何も考えずにさっと食べたい", emoji: "💤", next: "q3-simple-solo-q4" },
+    ],
+  },
+
+  // --- ヘトヘト × パートナー → Q3 ---
+  "q2-exhausted-partner-q3": {
+    id: "q2-exhausted-partner-q3",
+    question: "今の気持ちに近いのは？",
+    subtitle: "ふたりの夜をイメージして",
+    kibunExpression: "confident",
+    kibunSpeech: "ふたりの時間かぁ…",
+    options: [
       {
-        id: "yakitori", label: "串で一杯、焼き鳥", emoji: "🍢",
-        next: {
-          type: "endpoint",
-          genreIds: ["yakitori", "izakaya"],
-          resultLabel: "焼き鳥",
-          resultDescription: "炭火の香りと一杯の幸せ",
-          budgetLevel: "low",
-          q4Options: [C.all_you_can_drink, C.late_night, C.private_room],
-          siblingHint: ["焼肉（カジュアル）", "ステーキ", "ハンバーガー"],
-        },
+        id: "cozy", label: "ほっこり落ち着きたい", emoji: "🕯️",
+        next: { type: "endpoint", genreIds: ["washoku"], resultLabel: "和食", resultDescription: "繊細な味わいで心を満たす", budgetLevel: "high", q4Options: [h, f, D], siblingHint: ["天ぷら", "寿司（本格派）"] },
       },
       {
-        id: "hamburger", label: "かぶりつくハンバーガー", emoji: "🍔",
-        next: {
-          type: "endpoint",
-          genreIds: ["hamburger"],
-          resultLabel: "ハンバーガー",
-          resultDescription: "豪快にかぶりつく至福",
-          budgetLevel: "low",
-          q4Options: [C.lunch, C.parking],
-          siblingHint: ["焼き鳥", "ステーキ", "焼肉（カジュアル）"],
-        },
+        id: "treat", label: "ちょっと特別なことしたい", emoji: "✨",
+        next: { type: "endpoint", genreIds: ["italian", "french"], resultLabel: "リストランテ", resultDescription: "特別な夜をイタリアンで", budgetLevel: "high", q4Options: [h, f, D], siblingHint: ["カジュアルイタリアン", "特別なステーキディナー"] },
+      },
+      {
+        id: "easy", label: "ラクに美味しいものがいい", emoji: "😊",
+        next: { type: "endpoint", genreIds: ["teishoku", "washoku"], resultLabel: "定食", resultDescription: "バランスの良い安心の一食", budgetLevel: "low", q4Options: [k, D], siblingHint: ["うどん・そば", "カフェごはん"] },
       },
     ],
   },
 
-  // Q3: 焼肉 → 予算
-  "q2-meat-yakiniku-q3": {
-    id: "q2-meat-yakiniku-q3",
-    question: "焼肉の予算感は？",
-    subtitle: "お財布と相談",
+  // --- ヘトヘト × 友達 → Q3 ---
+  "q2-exhausted-friends-q3": {
+    id: "q2-exhausted-friends-q3",
+    question: "今の気持ちに近いのは？",
+    subtitle: "仲間と過ごすイメージで",
+    kibunExpression: "confident",
+    kibunSpeech: "友達と労い合うんだね",
+    options: [
+      {
+        id: "drink", label: "とりあえずカンパイしたい", emoji: "🍺",
+        next: { type: "endpoint", genreIds: ["izakaya"], resultLabel: "居酒屋", resultDescription: "なんでもある安心感で乾杯", budgetLevel: "medium", q4Options: [y, h, x], siblingHint: ["焼き鳥で一杯", "ダイニングバー"] },
+      },
+      {
+        id: "meat", label: "パワーチャージしたい", emoji: "⚡",
+        next: { type: "endpoint", genreIds: ["yakiniku"], resultLabel: "焼肉（カジュアル）", resultDescription: "みんなでワイワイ焼肉パーティー", budgetLevel: "medium", q4Options: [y, h, j], siblingHint: ["焼肉（プレミアム）", "居酒屋"] },
+      },
+      {
+        id: "chill", label: "まったりダラダラしたい", emoji: "🛋️",
+        next: { type: "endpoint", genreIds: ["okonomiyaki"], resultLabel: "お好み焼き", resultDescription: "鉄板の上でジュージュー", budgetLevel: "low", q4Options: [y, x], siblingHint: ["居酒屋", "焼肉（カジュアル）"] },
+      },
+    ],
+  },
+
+  // --- ヘトヘト × 家族 → Q3 ---
+  "q2-exhausted-family-q3": {
+    id: "q2-exhausted-family-q3",
+    question: "今の気持ちに近いのは？",
+    subtitle: "家族の夕食をイメージして",
+    kibunExpression: "confident",
+    kibunSpeech: "家族であったかい夜だね",
+    options: [
+      {
+        id: "familiar", label: "いつもの安心感がほしい", emoji: "🏠",
+        next: { type: "endpoint", genreIds: ["teishoku", "washoku"], resultLabel: "定食", resultDescription: "バランスの良い安心の一食", budgetLevel: "low", q4Options: [k, D], siblingHint: ["うどん・そば", "中華料理"] },
+      },
+      {
+        id: "fun", label: "みんなで楽しくワイワイ", emoji: "🎪",
+        next: { type: "endpoint", genreIds: ["chinese"], resultLabel: "中華料理", resultDescription: "火力と技の饗宴", budgetLevel: "medium", q4Options: [y, h, j], siblingHint: ["回転寿司", "お好み焼き"] },
+      },
+      {
+        id: "turnTable", label: "みんなが好きなものを選びたい", emoji: "🔄",
+        next: { type: "endpoint", genreIds: ["sushi"], resultLabel: "回転寿司", resultDescription: "気軽に楽しむ寿司パラダイス", budgetLevel: "low", q4Options: [j, D], siblingHint: ["中華料理", "定食"] },
+      },
+    ],
+  },
+
+  // ============================
+  // Q3 → Q4: 五感の連想（最終決定）
+  // ============================
+
+  // --- あったかい × ひとり → Q4 ---
+  "q3-warm-solo-q4": {
+    id: "q3-warm-solo-q4",
+    question: "ピンとくるのは？",
+    subtitle: "浮かんだイメージで選んでね",
     kibunExpression: "confident",
     kibunSpeech: "あと少し…見えてきたぞ",
     options: [
       {
-        id: "casual", label: "食べ放題でワイワイ", emoji: "🎉",
-        next: {
-          type: "endpoint",
-          genreIds: ["yakiniku"],
-          resultLabel: "焼肉（カジュアル）",
-          resultDescription: "みんなでワイワイ焼肉パーティー",
-          budgetLevel: "medium",
-          q4Options: [C.all_you_can_drink, C.private_room, C.parking],
-          siblingHint: ["焼肉（プレミアム）"],
-        },
+        id: "steam", label: "もくもく立ちのぼる湯気", emoji: "♨️",
+        next: { type: "endpoint", genreIds: ["ramen"], resultLabel: "こってりラーメン", resultDescription: "濃厚スープに麺が絡む至福", budgetLevel: "low", q4Options: [x, j], siblingHint: ["あっさりラーメン", "うどん・そば"] },
       },
       {
-        id: "premium", label: "ちょっといい焼肉", emoji: "✨",
-        next: {
-          type: "endpoint",
-          genreIds: ["yakiniku"],
-          resultLabel: "焼肉（プレミアム）",
-          resultDescription: "上質な肉を味わう特別な夜",
-          budgetLevel: "high",
-          q4Options: [C.private_room, C.card_ok, C.non_smoking],
-          siblingHint: ["焼肉（カジュアル）"],
-        },
+        id: "dashi", label: "じんわり染みる出汁の香り", emoji: "🍵",
+        next: { type: "endpoint", genreIds: ["udon_soba"], resultLabel: "うどん・そば", resultDescription: "出汁の優しさに包まれて", budgetLevel: "low", q4Options: [k, D], siblingHint: ["あっさりラーメン", "定食"] },
+      },
+      {
+        id: "broth", label: "透き通ったスープの澄んだ味", emoji: "🥢",
+        next: { type: "endpoint", genreIds: ["ramen"], resultLabel: "あっさりラーメン", resultDescription: "透き通るスープの深い旨味", budgetLevel: "low", q4Options: [x, j], siblingHint: ["こってりラーメン", "うどん・そば"] },
       },
     ],
   },
 
-  // Q3: ステーキ → 雰囲気
-  "q2-meat-steak-q3": {
-    id: "q2-meat-steak-q3",
-    question: "どんな雰囲気で食べたい？",
-    subtitle: "お肉の楽しみ方いろいろ",
+  // --- ご褒美 × ひとり → Q4 ---
+  "q3-reward-solo-q4": {
+    id: "q3-reward-solo-q4",
+    question: "ピンとくるのは？",
+    subtitle: "自分へのご褒美をイメージして",
     kibunExpression: "confident",
-    kibunSpeech: "なるほどなるほど…",
+    kibunSpeech: "贅沢しちゃおう！",
     options: [
       {
-        id: "casual", label: "カジュアルにがっつり", emoji: "💪",
-        next: {
-          type: "endpoint",
-          genreIds: ["steak", "hamburger"],
-          resultLabel: "ステーキ",
-          resultDescription: "ジューシーな肉をがっつりと",
-          budgetLevel: "medium",
-          q4Options: [C.lunch, C.parking],
-          siblingHint: ["特別なステーキディナー"],
-        },
+        id: "counter", label: "目の前で仕上がる一皿", emoji: "🍣",
+        next: { type: "endpoint", genreIds: ["sushi"], resultLabel: "寿司（本格派）", resultDescription: "職人の技を目の前で堪能", budgetLevel: "high", q4Options: [h, f], siblingHint: ["天ぷら", "和食"] },
       },
       {
-        id: "fancy", label: "記念日・デートで特別に", emoji: "🥂",
-        next: {
-          type: "endpoint",
-          genreIds: ["steak", "french"],
-          resultLabel: "特別なステーキディナー",
-          resultDescription: "大切な人と特別なひとときを",
-          budgetLevel: "high",
-          q4Options: [C.private_room, C.card_ok, C.non_smoking],
-          siblingHint: ["ステーキ"],
-        },
+        id: "sizzle", label: "ジュワッと焼ける肉の音", emoji: "🥩",
+        next: { type: "endpoint", genreIds: ["steak", "french"], resultLabel: "特別なステーキディナー", resultDescription: "大切な人と特別なひとときを", budgetLevel: "high", q4Options: [h, f, D], siblingHint: ["ステーキ", "焼肉（プレミアム）"] },
+      },
+      {
+        id: "crisp", label: "サクッと揚がる衣の食感", emoji: "✨",
+        next: { type: "endpoint", genreIds: ["tempura", "washoku"], resultLabel: "天ぷら", resultDescription: "揚げたてサクサクの贅沢", budgetLevel: "medium", q4Options: [h, f], siblingHint: ["寿司（本格派）", "和食"] },
       },
     ],
   },
 
-  // ==================== Q2: 和食ルート ====================
-  "q1-japanese-q2": {
-    id: "q1-japanese-q2",
-    question: "和食、何が食べたい？",
-    subtitle: "日本の味を楽しもう",
-    kibunExpression: "excited",
-    kibunSpeech: "和食かぁ、いいねぇ",
-    options: [
-      { id: "sushi", label: "お寿司が食べたい", emoji: "🍣", next: "q2-japanese-sushi-q3" },
-      {
-        id: "tempura", label: "サクッと天ぷら", emoji: "🍤",
-        next: {
-          type: "endpoint",
-          genreIds: ["tempura", "washoku"],
-          resultLabel: "天ぷら",
-          resultDescription: "揚げたてサクサクの贅沢",
-          budgetLevel: "medium",
-          q4Options: [C.private_room, C.card_ok],
-          siblingHint: ["寿司（本格派）", "定食", "和食"],
-        },
-      },
-      {
-        id: "teishoku", label: "定食でほっこり", emoji: "🍚",
-        next: {
-          type: "endpoint",
-          genreIds: ["teishoku", "washoku"],
-          resultLabel: "定食",
-          resultDescription: "バランスの良い安心の一食",
-          budgetLevel: "low",
-          q4Options: [C.lunch, C.non_smoking],
-          siblingHint: ["天ぷら", "うどん・そば"],
-        },
-      },
-      {
-        id: "washoku", label: "しっぽり和の空間で", emoji: "🏯",
-        next: {
-          type: "endpoint",
-          genreIds: ["washoku"],
-          resultLabel: "和食",
-          resultDescription: "繊細な味わいで心を満たす",
-          budgetLevel: "high",
-          q4Options: [C.private_room, C.card_ok, C.non_smoking],
-          siblingHint: ["寿司（本格派）", "天ぷら"],
-        },
-      },
-    ],
-  },
-
-  // Q3: 寿司 → 予算
-  "q2-japanese-sushi-q3": {
-    id: "q2-japanese-sushi-q3",
-    question: "どんなお寿司の気分？",
-    subtitle: "ネタの新鮮さを想像して",
+  // --- さっと食べたい × ひとり → Q4 ---
+  "q3-simple-solo-q4": {
+    id: "q3-simple-solo-q4",
+    question: "ピンとくるのは？",
+    subtitle: "深く考えなくて大丈夫",
     kibunExpression: "confident",
-    kibunSpeech: "お寿司…見えてきた！",
+    kibunSpeech: "もう少しで当てるよ…",
     options: [
       {
-        id: "conveyor", label: "回転寿司でワイワイ", emoji: "🔄",
-        next: {
-          type: "endpoint",
-          genreIds: ["sushi"],
-          resultLabel: "回転寿司",
-          resultDescription: "気軽に楽しむ寿司パラダイス",
-          budgetLevel: "low",
-          q4Options: [C.parking, C.non_smoking],
-          siblingHint: ["寿司（本格派）"],
-        },
+        id: "noodle", label: "ズズッとすすれるもの", emoji: "🌀",
+        next: { type: "endpoint", genreIds: ["ramen", "udon_soba"], resultLabel: "さらっと麺", resultDescription: "あったかい一杯でほっこり", budgetLevel: "low", q4Options: [x, D], siblingHint: ["カフェごはん", "定食"] },
       },
       {
-        id: "counter", label: "カウンターで握りたて", emoji: "🍣",
-        next: {
-          type: "endpoint",
-          genreIds: ["sushi"],
-          resultLabel: "寿司（本格派）",
-          resultDescription: "職人の技を目の前で堪能",
-          budgetLevel: "high",
-          q4Options: [C.private_room, C.card_ok],
-          siblingHint: ["回転寿司"],
-        },
+        id: "rice", label: "白ごはんをかきこみたい", emoji: "🍚",
+        next: { type: "endpoint", genreIds: ["curry"], resultLabel: "カレー", resultDescription: "スパイスの魔法で元気チャージ", budgetLevel: "low", q4Options: [k, D], siblingHint: ["定食", "中華料理"] },
+      },
+      {
+        id: "quiet", label: "静かな空間でぼんやり", emoji: "☕",
+        next: { type: "endpoint", genreIds: ["cafe"], resultLabel: "カフェごはん", resultDescription: "ゆったりと美味しいひととき", budgetLevel: "low", q4Options: [k, D], siblingHint: ["ヘルシーごはん", "うどん・そば"] },
       },
     ],
   },
 
-  // ==================== Q2: 麺ルート ====================
-  "q1-noodle-q2": {
-    id: "q1-noodle-q2",
-    question: "どんな麺の気分？",
-    subtitle: "ズズッとすすろう",
-    kibunExpression: "excited",
-    kibunSpeech: "麺！最高じゃん！",
-    options: [
-      { id: "ramen", label: "ラーメン！", emoji: "🍜", next: "q2-noodle-ramen-q3" },
-      {
-        id: "udon_soba", label: "うどん・そば", emoji: "🥢",
-        next: {
-          type: "endpoint",
-          genreIds: ["udon_soba"],
-          resultLabel: "うどん・そば",
-          resultDescription: "出汁の優しさに包まれて",
-          budgetLevel: "low",
-          q4Options: [C.lunch, C.non_smoking],
-          siblingHint: ["こってりラーメン", "パスタ"],
-        },
-      },
-      {
-        id: "pasta", label: "パスタ・イタリアン", emoji: "🍝",
-        next: {
-          type: "endpoint",
-          genreIds: ["italian"],
-          resultLabel: "パスタ",
-          resultDescription: "アルデンテの幸福",
-          budgetLevel: "medium",
-          q4Options: [C.lunch, C.non_smoking, C.card_ok],
-          siblingHint: ["うどん・そば", "こってりラーメン"],
-        },
-      },
-      {
-        id: "okonomiyaki", label: "お好み焼き・もんじゃ", emoji: "🥞",
-        next: {
-          type: "endpoint",
-          genreIds: ["okonomiyaki"],
-          resultLabel: "お好み焼き",
-          resultDescription: "鉄板の上でジュージュー",
-          budgetLevel: "low",
-          q4Options: [C.all_you_can_drink, C.late_night],
-          siblingHint: ["ラーメン", "うどん・そば"],
-        },
-      },
-    ],
-  },
+  // ============================
+  // テンション高い系
+  // ============================
 
-  // Q3: ラーメン → こだわり
-  "q2-noodle-ramen-q3": {
-    id: "q2-noodle-ramen-q3",
-    question: "ラーメンのこだわりは？",
-    subtitle: "一杯入魂",
+  // --- ハイ × ひとり → Q3 ---
+  "q2-hyper-solo-q3": {
+    id: "q2-hyper-solo-q3",
+    question: "今の気持ちに近いのは？",
+    subtitle: "最高の日にふさわしいのは？",
     kibunExpression: "confident",
-    kibunSpeech: "ラーメンにはこだわりがあるよね",
+    kibunSpeech: "テンション高い！いいね！",
     options: [
       {
-        id: "rich", label: "こってり濃厚", emoji: "🔥",
-        next: {
-          type: "endpoint",
-          genreIds: ["ramen"],
-          resultLabel: "こってりラーメン",
-          resultDescription: "濃厚スープに麺が絡む至福",
-          budgetLevel: "low",
-          q4Options: [C.late_night, C.parking],
-          siblingHint: ["あっさりラーメン", "つけ麺"],
-        },
+        id: "luxury", label: "自分を思いっきり甘やかしたい", emoji: "👑",
+        next: { type: "endpoint", genreIds: ["yakiniku"], resultLabel: "焼肉（プレミアム）", resultDescription: "上質な肉を味わう特別な夜", budgetLevel: "high", q4Options: [h, f, D], siblingHint: ["寿司（本格派）", "特別なステーキディナー"] },
       },
       {
-        id: "light", label: "あっさりさっぱり", emoji: "🌿",
-        next: {
-          type: "endpoint",
-          genreIds: ["ramen"],
-          resultLabel: "あっさりラーメン",
-          resultDescription: "透き通るスープの深い旨味",
-          budgetLevel: "low",
-          q4Options: [C.late_night, C.parking],
-          siblingHint: ["こってりラーメン", "つけ麺"],
-        },
+        id: "bold", label: "ガツンと攻めたい！", emoji: "💪",
+        next: { type: "endpoint", genreIds: ["ramen"], resultLabel: "つけ麺", resultDescription: "太麺を濃厚つけ汁にダイブ", budgetLevel: "low", q4Options: [x, j], siblingHint: ["こってりラーメン", "ハンバーガー"] },
       },
       {
-        id: "tsukemen", label: "つけ麺でがっつり", emoji: "🍜",
-        next: {
-          type: "endpoint",
-          genreIds: ["ramen"],
-          resultLabel: "つけ麺",
-          resultDescription: "太麺を濃厚つけ汁にダイブ",
-          budgetLevel: "low",
-          q4Options: [C.late_night, C.parking],
-          siblingHint: ["こってりラーメン", "あっさりラーメン"],
-        },
+        id: "explore", label: "いつもと違うことしたい", emoji: "🧭",
+        next: { type: "endpoint", genreIds: ["korean", "yakiniku"], resultLabel: "韓国料理", resultDescription: "辛さと旨さのハーモニー", budgetLevel: "medium", q4Options: [y, x], siblingHint: ["タイ料理", "カレー"] },
       },
     ],
   },
 
-  // ==================== Q2: 海外ルート ====================
-  "q1-world-q2": {
-    id: "q1-world-q2",
-    question: "どこの国の気分？",
-    subtitle: "世界の味を旅しよう",
-    kibunExpression: "excited",
-    kibunSpeech: "世界旅行気分だね！",
-    options: [
-      { id: "italian", label: "イタリアン", emoji: "🇮🇹", next: "q2-world-italian-q3" },
-      {
-        id: "chinese", label: "中華", emoji: "🇨🇳",
-        next: {
-          type: "endpoint",
-          genreIds: ["chinese"],
-          resultLabel: "中華料理",
-          resultDescription: "火力と技の饗宴",
-          budgetLevel: "medium",
-          q4Options: [C.all_you_can_drink, C.private_room, C.parking],
-          siblingHint: ["韓国料理", "カレー"],
-        },
-      },
-      {
-        id: "korean", label: "韓国料理", emoji: "🇰🇷",
-        next: {
-          type: "endpoint",
-          genreIds: ["korean", "yakiniku"],
-          resultLabel: "韓国料理",
-          resultDescription: "辛さと旨さのハーモニー",
-          budgetLevel: "medium",
-          q4Options: [C.all_you_can_drink, C.late_night],
-          siblingHint: ["中華料理", "タイ料理"],
-        },
-      },
-      { id: "asian", label: "タイ・ベトナム・アジアン", emoji: "🌴", next: "q2-world-asian-q3" },
-      {
-        id: "curry", label: "カレー", emoji: "🍛",
-        next: {
-          type: "endpoint",
-          genreIds: ["curry"],
-          resultLabel: "カレー",
-          resultDescription: "スパイスの魔法で元気チャージ",
-          budgetLevel: "low",
-          q4Options: [C.lunch, C.non_smoking],
-          siblingHint: ["タイ料理", "中華料理"],
-        },
-      },
-    ],
-  },
-
-  // Q3: イタリアン → 雰囲気
-  "q2-world-italian-q3": {
-    id: "q2-world-italian-q3",
-    question: "どんな雰囲気で？",
-    subtitle: "ボーノ！",
+  // --- ハイ × パートナー → Q3 ---
+  "q2-hyper-partner-q3": {
+    id: "q2-hyper-partner-q3",
+    question: "今の気持ちに近いのは？",
+    subtitle: "特別な夜のイメージは？",
     kibunExpression: "confident",
-    kibunSpeech: "イタリアン…もう少しで当てるよ",
+    kibunSpeech: "大切な人との夜か…",
     options: [
       {
-        id: "casual", label: "カジュアルにピザ・パスタ", emoji: "🍕",
-        next: {
-          type: "endpoint",
-          genreIds: ["italian"],
-          resultLabel: "カジュアルイタリアン",
-          resultDescription: "気軽に楽しむイタリアの味",
-          budgetLevel: "medium",
-          q4Options: [C.lunch, C.non_smoking],
-          siblingHint: ["リストランテ"],
-        },
+        id: "romantic", label: "ムードのある空間でゆったり", emoji: "🌙",
+        next: { type: "endpoint", genreIds: ["italian", "french"], resultLabel: "リストランテ", resultDescription: "特別な夜をイタリアンで", budgetLevel: "high", q4Options: [h, f, D], siblingHint: ["特別なステーキディナー", "和食"] },
       },
       {
-        id: "fancy", label: "おしゃれなリストランテ", emoji: "🥂",
-        next: {
-          type: "endpoint",
-          genreIds: ["italian", "french"],
-          resultLabel: "リストランテ",
-          resultDescription: "特別な夜をイタリアンで",
-          budgetLevel: "high",
-          q4Options: [C.private_room, C.card_ok, C.non_smoking],
-          siblingHint: ["カジュアルイタリアン"],
-        },
+        id: "lively", label: "一緒にキャッキャ楽しみたい", emoji: "🎵",
+        next: { type: "endpoint", genreIds: ["yakiniku"], resultLabel: "焼肉（カジュアル）", resultDescription: "みんなでワイワイ焼肉パーティー", budgetLevel: "medium", q4Options: [y, h, j], siblingHint: ["お好み焼き", "居酒屋"] },
+      },
+      {
+        id: "elegant", label: "とっておきの場所に連れて行きたい", emoji: "💎",
+        next: { type: "endpoint", genreIds: ["sushi"], resultLabel: "寿司（本格派）", resultDescription: "職人の技を目の前で堪能", budgetLevel: "high", q4Options: [h, f], siblingHint: ["和食", "リストランテ"] },
       },
     ],
   },
 
-  // Q3: アジアン → 具体
-  "q2-world-asian-q3": {
-    id: "q2-world-asian-q3",
-    question: "アジアンの中でもどれ？",
-    subtitle: "エスニック探検隊",
+  // --- ハイ × 友達 → Q3 ---
+  "q2-hyper-friends-q3": {
+    id: "q2-hyper-friends-q3",
+    question: "今の気持ちに近いのは？",
+    subtitle: "みんなでどう盛り上がる？",
     kibunExpression: "confident",
-    kibunSpeech: "エスニック…いいセンスしてる！",
+    kibunSpeech: "パーティーだね！",
     options: [
+      { id: "cheers", label: "まずは乾杯！飲みたい！", emoji: "🍻", next: "q3-hyper-friends-cheers-q4" },
       {
-        id: "thai", label: "タイ料理（トムヤム・ガパオ）", emoji: "🥘",
-        next: {
-          type: "endpoint",
-          genreIds: ["thai_vietnam"],
-          resultLabel: "タイ料理",
-          resultDescription: "辛・酸・甘のハーモニー",
-          budgetLevel: "medium",
-          q4Options: [C.all_you_can_drink, C.lunch],
-          siblingHint: ["ベトナム料理"],
-        },
+        id: "feast", label: "みんなで肉を焼きまくりたい！", emoji: "🔥",
+        next: { type: "endpoint", genreIds: ["yakiniku"], resultLabel: "焼肉（カジュアル）", resultDescription: "みんなでワイワイ焼肉パーティー", budgetLevel: "medium", q4Options: [y, h, j], siblingHint: ["焼肉（プレミアム）", "お好み焼き"] },
       },
       {
-        id: "vietnam", label: "ベトナム料理（フォー・生春巻き）", emoji: "🥗",
-        next: {
-          type: "endpoint",
-          genreIds: ["thai_vietnam"],
-          resultLabel: "ベトナム料理",
-          resultDescription: "ヘルシーで優しいアジアの風",
-          budgetLevel: "medium",
-          q4Options: [C.lunch, C.non_smoking],
-          siblingHint: ["タイ料理"],
-        },
+        id: "share", label: "いろんな料理をシェアしたい", emoji: "🍽️",
+        next: { type: "endpoint", genreIds: ["chinese"], resultLabel: "中華料理", resultDescription: "火力と技の饗宴", budgetLevel: "medium", q4Options: [y, h, j], siblingHint: ["カジュアルイタリアン", "居酒屋"] },
       },
     ],
   },
 
-  // ==================== Q2: 飲みルート ====================
-  "q1-drink-q2": {
-    id: "q1-drink-q2",
-    question: "どんな飲み方の気分？",
-    subtitle: "かんぱーい！",
-    kibunExpression: "excited",
-    kibunSpeech: "飲みたい気分なんだね！",
-    options: [
-      {
-        id: "izakaya", label: "居酒屋でワイワイ", emoji: "🏮",
-        next: {
-          type: "endpoint",
-          genreIds: ["izakaya"],
-          resultLabel: "居酒屋",
-          resultDescription: "なんでもある安心感で乾杯",
-          budgetLevel: "medium",
-          q4Options: [C.all_you_can_drink, C.private_room, C.late_night],
-          siblingHint: ["ダイニングバー", "焼き鳥で一杯"],
-        },
-      },
-      {
-        id: "dining_bar", label: "おしゃれにダイニングバー", emoji: "🍸",
-        next: {
-          type: "endpoint",
-          genreIds: ["dining_bar"],
-          resultLabel: "ダイニングバー",
-          resultDescription: "おしゃれ空間で大人の時間",
-          budgetLevel: "medium",
-          q4Options: [C.late_night, C.card_ok, C.non_smoking],
-          siblingHint: ["居酒屋", "女子会向きのお店"],
-        },
-      },
-      {
-        id: "yakitori_drink", label: "焼き鳥で一杯", emoji: "🍢",
-        next: {
-          type: "endpoint",
-          genreIds: ["yakitori", "izakaya"],
-          resultLabel: "焼き鳥で一杯",
-          resultDescription: "炭火の香りをアテに至福の一杯",
-          budgetLevel: "low",
-          q4Options: [C.all_you_can_drink, C.late_night],
-          siblingHint: ["居酒屋", "ダイニングバー"],
-        },
-      },
-      {
-        id: "girls", label: "女子会・おしゃれに飲みたい", emoji: "👩‍👩‍👧",
-        next: {
-          type: "endpoint",
-          genreIds: ["dining_bar", "italian"],
-          resultLabel: "女子会向きのお店",
-          resultDescription: "おしゃれで美味しい、女子会にぴったり",
-          budgetLevel: "medium",
-          q4Options: [C.all_you_can_drink, C.private_room, C.non_smoking],
-          siblingHint: ["ダイニングバー", "カジュアルイタリアン"],
-        },
-      },
-    ],
-  },
-
-  // ==================== Q2: 軽めルート ====================
-  "q1-light-q2": {
-    id: "q1-light-q2",
-    question: "軽めの中でも？",
-    subtitle: "さくっと決めよう",
-    kibunExpression: "excited",
-    kibunSpeech: "軽めね、了解！",
-    options: [
-      {
-        id: "cafe", label: "カフェごはん", emoji: "☕",
-        next: {
-          type: "endpoint",
-          genreIds: ["cafe"],
-          resultLabel: "カフェごはん",
-          resultDescription: "ゆったりと美味しいひととき",
-          budgetLevel: "low",
-          q4Options: [C.lunch, C.non_smoking],
-          siblingHint: ["ヘルシーごはん", "さらっと麺"],
-        },
-      },
-      {
-        id: "healthy", label: "ヘルシーに（サラダ・エスニック）", emoji: "🥗",
-        next: {
-          type: "endpoint",
-          genreIds: ["thai_vietnam", "cafe"],
-          resultLabel: "ヘルシーごはん",
-          resultDescription: "体に優しいヘルシーメニュー",
-          budgetLevel: "medium",
-          q4Options: [C.lunch, C.non_smoking],
-          siblingHint: ["カフェごはん", "ベトナム料理"],
-        },
-      },
-      {
-        id: "noodle", label: "あったかい麺でさらっと", emoji: "🍜",
-        next: {
-          type: "endpoint",
-          genreIds: ["ramen", "udon_soba"],
-          resultLabel: "さらっと麺",
-          resultDescription: "あったかい一杯でほっこり",
-          budgetLevel: "low",
-          q4Options: [C.late_night, C.non_smoking],
-          siblingHint: ["カフェごはん", "うどん・そば"],
-        },
-      },
-    ],
-  },
-
-  // ==================== Q2: おまかせルート ====================
-  "q1-omakase-q2": {
-    id: "q1-omakase-q2",
-    question: "ヒントだけちょうだい",
-    subtitle: "きぶんくんにおまかせ！",
+  // --- ハイ × 友達 × 乾杯 → Q4 ---
+  "q3-hyper-friends-cheers-q4": {
+    id: "q3-hyper-friends-cheers-q4",
+    question: "ピンとくるのは？",
+    subtitle: "乾杯のイメージは？",
     kibunExpression: "confident",
-    kibunSpeech: "まかせて！当ててみせるよ",
+    kibunSpeech: "あと少し…当てるよ！",
     options: [
       {
-        id: "cospa", label: "コスパ重視", emoji: "💰",
-        next: {
-          type: "endpoint",
-          genreIds: ["__random__"],
-          resultLabel: "おまかせ（コスパ）",
-          resultDescription: "お財布に優しい今夜のおすすめ",
-          budgetLevel: "low",
-          q4Options: [C.lunch, C.non_smoking],
-        },
+        id: "lantern", label: "赤提灯のあったかい灯り", emoji: "🏮",
+        next: { type: "endpoint", genreIds: ["izakaya"], resultLabel: "居酒屋", resultDescription: "なんでもある安心感で乾杯", budgetLevel: "medium", q4Options: [y, h, x], siblingHint: ["焼き鳥で一杯", "ダイニングバー"] },
       },
       {
-        id: "sns", label: "SNS映え重視", emoji: "📸",
-        next: {
-          type: "endpoint",
-          genreIds: ["__random__"],
-          resultLabel: "おまかせ（映え）",
-          resultDescription: "思わず写真を撮りたくなるお店",
-          budgetLevel: "medium",
-          q4Options: [C.non_smoking, C.card_ok],
-        },
+        id: "charcoal", label: "煙と炭火の香り", emoji: "💨",
+        next: { type: "endpoint", genreIds: ["yakitori", "izakaya"], resultLabel: "焼き鳥で一杯", resultDescription: "炭火の香りをアテに至福の一杯", budgetLevel: "low", q4Options: [y, x], siblingHint: ["居酒屋", "ダイニングバー"] },
       },
       {
-        id: "random", label: "完全ランダム", emoji: "🎰",
-        next: {
-          type: "endpoint",
-          genreIds: ["__random__"],
-          resultLabel: "おまかせ（完全ランダム）",
-          resultDescription: "運命に身を任せて",
-          budgetLevel: "any",
-          q4Options: [],
-        },
+        id: "stylish", label: "おしゃれなカクテルグラス", emoji: "🍸",
+        next: { type: "endpoint", genreIds: ["dining_bar"], resultLabel: "ダイニングバー", resultDescription: "おしゃれ空間で大人の時間", budgetLevel: "medium", q4Options: [x, f, D], siblingHint: ["居酒屋", "カジュアルイタリアン"] },
+      },
+    ],
+  },
+
+  // --- ハイ × 家族 → Q3 ---
+  "q2-hyper-family-q3": {
+    id: "q2-hyper-family-q3",
+    question: "今の気持ちに近いのは？",
+    subtitle: "家族でどう楽しむ？",
+    kibunExpression: "confident",
+    kibunSpeech: "家族と最高の夜だ！",
+    options: [
+      {
+        id: "interactive", label: "みんなで作る楽しさ", emoji: "🤲",
+        next: { type: "endpoint", genreIds: ["okonomiyaki"], resultLabel: "お好み焼き", resultDescription: "鉄板の上でジュージュー", budgetLevel: "low", q4Options: [y, x], siblingHint: ["焼肉（カジュアル）", "回転寿司"] },
+      },
+      {
+        id: "pick", label: "好きなものを好きなだけ", emoji: "🔄",
+        next: { type: "endpoint", genreIds: ["sushi"], resultLabel: "回転寿司", resultDescription: "気軽に楽しむ寿司パラダイス", budgetLevel: "low", q4Options: [j, D], siblingHint: ["中華料理", "焼肉（カジュアル）"] },
+      },
+      {
+        id: "big_plate", label: "大皿でドーンと豪快に", emoji: "🍖",
+        next: { type: "endpoint", genreIds: ["steak", "hamburger"], resultLabel: "ステーキ", resultDescription: "ジューシーな肉をがっつりと", budgetLevel: "medium", q4Options: [k, j], siblingHint: ["中華料理", "焼肉（カジュアル）"] },
+      },
+    ],
+  },
+
+  // ============================
+  // いつも通り系
+  // ============================
+
+  // --- ふつう × ひとり → Q3 ---
+  "q2-normal-solo-q3": {
+    id: "q2-normal-solo-q3",
+    question: "今の気持ちに近いのは？",
+    subtitle: "今夜の自分の声を聞いて",
+    kibunExpression: "confident",
+    kibunSpeech: "ふむふむ…見えてきた！",
+    options: [
+      {
+        id: "autopilot", label: "考えたくない、いつも通りでいい", emoji: "🔁",
+        next: { type: "endpoint", genreIds: ["teishoku", "washoku"], resultLabel: "定食", resultDescription: "バランスの良い安心の一食", budgetLevel: "low", q4Options: [k, D], siblingHint: ["カレー", "うどん・そば"] },
+      },
+      { id: "curious", label: "ちょっと冒険してみようかな", emoji: "🗺️", next: "q3-normal-solo-curious-q4" },
+      {
+        id: "hungry", label: "なんかガッツリ食べたいかも", emoji: "🍖",
+        next: { type: "endpoint", genreIds: ["hamburger"], resultLabel: "ハンバーガー", resultDescription: "豪快にかぶりつく至福", budgetLevel: "low", q4Options: [k, j], siblingHint: ["ステーキ", "こってりラーメン"] },
+      },
+    ],
+  },
+
+  // --- ふつう × ひとり × 冒険 → Q4 ---
+  "q3-normal-solo-curious-q4": {
+    id: "q3-normal-solo-curious-q4",
+    question: "ピンとくるのは？",
+    subtitle: "冒険のイメージは？",
+    kibunExpression: "confident",
+    kibunSpeech: "冒険好きだね…当てるよ！",
+    options: [
+      {
+        id: "spice", label: "知らないスパイスの香り", emoji: "🌶️",
+        next: { type: "endpoint", genreIds: ["thai_vietnam"], resultLabel: "タイ料理", resultDescription: "辛・酸・甘のハーモニー", budgetLevel: "medium", q4Options: [y, k], siblingHint: ["ベトナム料理", "カレー"] },
+      },
+      {
+        id: "herbs", label: "さわやかなハーブの風", emoji: "🌿",
+        next: { type: "endpoint", genreIds: ["thai_vietnam"], resultLabel: "ベトナム料理", resultDescription: "ヘルシーで優しいアジアの風", budgetLevel: "medium", q4Options: [k, D], siblingHint: ["タイ料理", "ヘルシーごはん"] },
+      },
+      {
+        id: "buzz", label: "異国のにぎやかな食堂", emoji: "🌍",
+        next: { type: "endpoint", genreIds: ["korean", "yakiniku"], resultLabel: "韓国料理", resultDescription: "辛さと旨さのハーモニー", budgetLevel: "medium", q4Options: [y, x], siblingHint: ["中華料理", "タイ料理"] },
+      },
+    ],
+  },
+
+  // --- ふつう × パートナー → Q3 ---
+  "q2-normal-partner-q3": {
+    id: "q2-normal-partner-q3",
+    question: "今の気持ちに近いのは？",
+    subtitle: "ふたりの夜の空気は？",
+    kibunExpression: "confident",
+    kibunSpeech: "いい感じに見えてきた！",
+    options: [
+      {
+        id: "casual_date", label: "カジュアルに楽しく", emoji: "😄",
+        next: { type: "endpoint", genreIds: ["italian"], resultLabel: "カジュアルイタリアン", resultDescription: "気軽に楽しむイタリアの味", budgetLevel: "medium", q4Options: [k, D], siblingHint: ["リストランテ", "ダイニングバー"] },
+      },
+      {
+        id: "quiet_night", label: "しっとり穏やかに", emoji: "🌙",
+        next: { type: "endpoint", genreIds: ["washoku"], resultLabel: "和食", resultDescription: "繊細な味わいで心を満たす", budgetLevel: "high", q4Options: [h, f, D], siblingHint: ["寿司（本格派）", "天ぷら"] },
+      },
+      {
+        id: "surprise", label: "相手をちょっと驚かせたい", emoji: "🎁",
+        next: { type: "endpoint", genreIds: ["steak", "french"], resultLabel: "特別なステーキディナー", resultDescription: "大切な人と特別なひとときを", budgetLevel: "high", q4Options: [h, f, D], siblingHint: ["リストランテ", "寿司（本格派）"] },
+      },
+    ],
+  },
+
+  // --- ふつう × 友達 → Q3 ---
+  "q2-normal-friends-q3": {
+    id: "q2-normal-friends-q3",
+    question: "今の気持ちに近いのは？",
+    subtitle: "友達との時間のイメージは？",
+    kibunExpression: "confident",
+    kibunSpeech: "友達と今夜かぁ…",
+    options: [
+      {
+        id: "talk", label: "おしゃべりが止まらなそう", emoji: "💬",
+        next: { type: "endpoint", genreIds: ["dining_bar", "italian"], resultLabel: "女子会向きのお店", resultDescription: "おしゃれで美味しい、女子会にぴったり", budgetLevel: "medium", q4Options: [y, h, D], siblingHint: ["ダイニングバー", "カジュアルイタリアン"] },
+      },
+      {
+        id: "noisy", label: "ガヤガヤ気にせず楽しみたい", emoji: "🎤",
+        next: { type: "endpoint", genreIds: ["izakaya"], resultLabel: "居酒屋", resultDescription: "なんでもある安心感で乾杯", budgetLevel: "medium", q4Options: [y, h, x], siblingHint: ["焼き鳥で一杯", "焼肉（カジュアル）"] },
+      },
+      {
+        id: "cook_together", label: "一緒に焼いたり作ったりしたい", emoji: "🫕",
+        next: { type: "endpoint", genreIds: ["okonomiyaki"], resultLabel: "お好み焼き", resultDescription: "鉄板の上でジュージュー", budgetLevel: "low", q4Options: [y, x], siblingHint: ["焼肉（カジュアル）", "居酒屋"] },
+      },
+    ],
+  },
+
+  // --- ふつう × 家族 → Q3 ---
+  "q2-normal-family-q3": {
+    id: "q2-normal-family-q3",
+    question: "今の気持ちに近いのは？",
+    subtitle: "家族の夕食をイメージして",
+    kibunExpression: "confident",
+    kibunSpeech: "家族でごはんだね",
+    options: [
+      {
+        id: "speed", label: "パパッと早く食べたい", emoji: "⏰",
+        next: { type: "endpoint", genreIds: ["curry"], resultLabel: "カレー", resultDescription: "スパイスの魔法で元気チャージ", budgetLevel: "low", q4Options: [k, D], siblingHint: ["定食", "ハンバーガー"] },
+      },
+      {
+        id: "kids_happy", label: "子どもが喜ぶ顔が見たい", emoji: "😆",
+        next: { type: "endpoint", genreIds: ["hamburger"], resultLabel: "ハンバーガー", resultDescription: "豪快にかぶりつく至福", budgetLevel: "low", q4Options: [k, j], siblingHint: ["回転寿司", "カレー"] },
+      },
+      {
+        id: "balanced", label: "バランスよく色々食べたい", emoji: "🍱",
+        next: { type: "endpoint", genreIds: ["chinese"], resultLabel: "中華料理", resultDescription: "火力と技の饗宴", budgetLevel: "medium", q4Options: [y, h, j], siblingHint: ["回転寿司", "定食"] },
+      },
+    ],
+  },
+
+  // ============================
+  // ストレス系
+  // ============================
+
+  // --- ストレス × ひとり → Q3 ---
+  "q2-stressed-solo-q3": {
+    id: "q2-stressed-solo-q3",
+    question: "今の気持ちに近いのは？",
+    subtitle: "そのモヤモヤ、食で解消！",
+    kibunExpression: "confident",
+    kibunSpeech: "溜まってるんだね…任せて！",
+    options: [
+      { id: "destroy", label: "ガツンとパンチのあるもので吹き飛ばしたい", emoji: "👊", next: "q3-stressed-solo-destroy-q4" },
+      {
+        id: "heal", label: "やさしい味でじんわり癒されたい", emoji: "🫂",
+        next: { type: "endpoint", genreIds: ["udon_soba"], resultLabel: "うどん・そば", resultDescription: "出汁の優しさに包まれて", budgetLevel: "low", q4Options: [k, D], siblingHint: ["カフェごはん", "定食"] },
+      },
+      {
+        id: "spice", label: "刺激的な味で気分を変えたい", emoji: "🌶️",
+        next: { type: "endpoint", genreIds: ["korean", "yakiniku"], resultLabel: "韓国料理", resultDescription: "辛さと旨さのハーモニー", budgetLevel: "medium", q4Options: [y, x], siblingHint: ["タイ料理", "カレー"] },
+      },
+    ],
+  },
+
+  // --- ストレス × ひとり × ガツン → Q4 ---
+  "q3-stressed-solo-destroy-q4": {
+    id: "q3-stressed-solo-destroy-q4",
+    question: "ピンとくるのは？",
+    subtitle: "ストレス吹き飛ばすイメージは？",
+    kibunExpression: "confident",
+    kibunSpeech: "あと少し…当てるぞ！",
+    options: [
+      {
+        id: "thick_soup", label: "ドロッと濃厚なスープ", emoji: "🍜",
+        next: { type: "endpoint", genreIds: ["ramen"], resultLabel: "こってりラーメン", resultDescription: "濃厚スープに麺が絡む至福", budgetLevel: "low", q4Options: [x, j], siblingHint: ["つけ麺", "あっさりラーメン"] },
+      },
+      {
+        id: "bite", label: "がぶっとかぶりつく", emoji: "🍔",
+        next: { type: "endpoint", genreIds: ["hamburger"], resultLabel: "ハンバーガー", resultDescription: "豪快にかぶりつく至福", budgetLevel: "low", q4Options: [k, j], siblingHint: ["ステーキ", "焼肉（カジュアル）"] },
+      },
+      {
+        id: "fire", label: "目の前で炎が上がる肉", emoji: "🔥",
+        next: { type: "endpoint", genreIds: ["steak", "hamburger"], resultLabel: "ステーキ", resultDescription: "ジューシーな肉をがっつりと", budgetLevel: "medium", q4Options: [k, j], siblingHint: ["焼肉（カジュアル）", "ハンバーガー"] },
+      },
+    ],
+  },
+
+  // --- ストレス × パートナー → Q3 ---
+  "q2-stressed-partner-q3": {
+    id: "q2-stressed-partner-q3",
+    question: "今の気持ちに近いのは？",
+    subtitle: "パートナーとの夜のイメージ",
+    kibunExpression: "confident",
+    kibunSpeech: "話を聞いてくれる人がいるっていいね",
+    options: [
+      {
+        id: "comfort", label: "安心できる味でほっとしたい", emoji: "🍵",
+        next: { type: "endpoint", genreIds: ["washoku"], resultLabel: "和食", resultDescription: "繊細な味わいで心を満たす", budgetLevel: "high", q4Options: [h, f, D], siblingHint: ["定食", "うどん・そば"] },
+      },
+      {
+        id: "cheer_up", label: "気分を上げるために美味しいもの！", emoji: "🎉",
+        next: { type: "endpoint", genreIds: ["yakiniku"], resultLabel: "焼肉（カジュアル）", resultDescription: "みんなでワイワイ焼肉パーティー", budgetLevel: "medium", q4Options: [y, h, j], siblingHint: ["焼肉（プレミアム）", "ステーキ"] },
+      },
+      {
+        id: "wine", label: "お酒飲みながらゆっくり話したい", emoji: "🍷",
+        next: { type: "endpoint", genreIds: ["dining_bar"], resultLabel: "ダイニングバー", resultDescription: "おしゃれ空間で大人の時間", budgetLevel: "medium", q4Options: [x, f, D], siblingHint: ["カジュアルイタリアン", "居酒屋"] },
+      },
+    ],
+  },
+
+  // --- ストレス × 友達 → Q3 ---
+  "q2-stressed-friends-q3": {
+    id: "q2-stressed-friends-q3",
+    question: "今の気持ちに近いのは？",
+    subtitle: "友達とモヤモヤ発散！",
+    kibunExpression: "confident",
+    kibunSpeech: "友達と発散するんだね！",
+    options: [
+      {
+        id: "loud", label: "うるさいくらいがちょうどいい", emoji: "📢",
+        next: { type: "endpoint", genreIds: ["izakaya"], resultLabel: "居酒屋", resultDescription: "なんでもある安心感で乾杯", budgetLevel: "medium", q4Options: [y, h, x], siblingHint: ["焼き鳥で一杯", "焼肉（カジュアル）"] },
+      },
+      {
+        id: "burn", label: "肉でも焼いてストレス燃やしたい", emoji: "🥩",
+        next: { type: "endpoint", genreIds: ["yakiniku"], resultLabel: "焼肉（カジュアル）", resultDescription: "みんなでワイワイ焼肉パーティー", budgetLevel: "medium", q4Options: [y, h, j], siblingHint: ["焼肉（プレミアム）", "お好み焼き"] },
+      },
+      {
+        id: "girls_night", label: "おしゃれな場所でテンション上げたい", emoji: "💅",
+        next: { type: "endpoint", genreIds: ["dining_bar", "italian"], resultLabel: "女子会向きのお店", resultDescription: "おしゃれで美味しい、女子会にぴったり", budgetLevel: "medium", q4Options: [y, h, D], siblingHint: ["ダイニングバー", "カジュアルイタリアン"] },
+      },
+    ],
+  },
+
+  // --- ストレス × 家族 → Q3 ---
+  "q2-stressed-family-q3": {
+    id: "q2-stressed-family-q3",
+    question: "今の気持ちに近いのは？",
+    subtitle: "家族のそばで充電しよう",
+    kibunExpression: "confident",
+    kibunSpeech: "家族がいれば大丈夫！",
+    options: [
+      {
+        id: "nostalgic", label: "懐かしい味にほっとしたい", emoji: "🏡",
+        next: { type: "endpoint", genreIds: ["teishoku", "washoku"], resultLabel: "定食", resultDescription: "バランスの良い安心の一食", budgetLevel: "low", q4Options: [k, D], siblingHint: ["うどん・そば", "カレー"] },
+      },
+      {
+        id: "forget_it", label: "食べて忘れたい！パーッと！", emoji: "🎊",
+        next: { type: "endpoint", genreIds: ["sushi"], resultLabel: "回転寿司", resultDescription: "気軽に楽しむ寿司パラダイス", budgetLevel: "low", q4Options: [j, D], siblingHint: ["焼肉（カジュアル）", "中華料理"] },
+      },
+      {
+        id: "warm_belly", label: "あったかいものでお腹を満たしたい", emoji: "🫕",
+        next: { type: "endpoint", genreIds: ["ramen", "udon_soba"], resultLabel: "さらっと麺", resultDescription: "あったかい一杯でほっこり", budgetLevel: "low", q4Options: [x, D], siblingHint: ["うどん・そば", "定食"] },
       },
     ],
   },

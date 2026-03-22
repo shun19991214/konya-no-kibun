@@ -9,6 +9,7 @@ import { KibunKun } from "@/components/character/KibunKun";
 import { GENRE_MAP } from "@/data/genres";
 import { QUESTION_TREE } from "@/data/questionTree";
 import { resolveRandomGenre } from "@/lib/randomGenre";
+import { Q4_CHIPS } from "@/data/q4chips";
 import type { EndpointNode, OptionNode, Restaurant, Q4Chip } from "@/types";
 
 // ===== Phase types =====
@@ -74,6 +75,8 @@ export default function PlayPage() {
   const [activeChips, setActiveChips] = useState<Q4Chip[]>([]);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [searchRange, setSearchRange] = useState(3);
+  const [transportMode, setTransportMode] = useState<"walk" | "bicycle" | "train" | "car">("walk");
+  const [stationQuery, setStationQuery] = useState("");
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
 
@@ -96,9 +99,9 @@ export default function PlayPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.endpoint]);
 
-  // Auto-geolocation on detail phase
+  // Auto-geolocation on detail phase (not for train mode)
   useEffect(() => {
-    if (phase !== "detail" || !resolvedEndpoint || userLocation) return;
+    if (phase !== "detail" || !resolvedEndpoint || userLocation || transportMode === "train") return;
     navigator.geolocation.getCurrentPosition(
       (pos) => searchRestaurants(pos.coords.latitude, pos.coords.longitude, searchRange),
       () => { /* denied — manual UI shown */ }
@@ -163,6 +166,57 @@ export default function PlayPage() {
       setIsSearching(false);
     }
   }, [resolvedEndpoint, activeChips]);
+
+  // 駅名・エリア名でキーワード検索
+  const searchByStation = useCallback(async (query: string) => {
+    if (!resolvedEndpoint || !query.trim()) return;
+    setIsSearching(true);
+    setUserLocation(null);
+
+    const genreId = resolvedEndpoint.genreIds[0];
+    const genre = GENRE_MAP[genreId];
+    if (!genre) { setIsSearching(false); return; }
+
+    const params = new URLSearchParams({
+      keyword: `${query} ${genre.keyword || genre.label}`,
+      range: "5",
+      count: "5",
+    });
+
+    for (const chip of activeChips) {
+      params.set(chip.apiParam, chip.apiValue);
+    }
+
+    try {
+      const res = await fetch(`/api/restaurants?${params.toString()}`);
+      const data = await res.json();
+      setRestaurants(data.restaurants || []);
+    } catch {
+      setRestaurants([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }, [resolvedEndpoint, activeChips]);
+
+  // 交通手段を選択した時の処理
+  const selectTransport = useCallback((mode: "walk" | "bicycle" | "train" | "car") => {
+    setTransportMode(mode);
+    setRestaurants([]);
+    setUserLocation(null);
+
+    // 車 → 駐車場ありを自動ON
+    if (mode === "car") {
+      setActiveChips(prev => {
+        if (prev.find(c => c.id === "parking")) return prev;
+        return [...prev, Q4_CHIPS.parking];
+      });
+      setSearchRange(5);
+    } else {
+      // 車以外 → 駐車場チップを自動OFF
+      setActiveChips(prev => prev.filter(c => c.id !== "parking"));
+      setSearchRange(mode === "walk" ? 2 : mode === "bicycle" ? 3 : 5);
+    }
+  }, []);
 
   const toggleChip = useCallback((chip: Q4Chip) => {
     setActiveChips(prev =>
@@ -453,40 +507,67 @@ export default function PlayPage() {
             </div>
           )}
 
-          {/* Location search */}
+          {/* Transport mode + Location search */}
           <div className="mb-6">
-            <p className="text-xs text-gray-500 mb-3 font-medium">近くのお店を探す</p>
-            <div className="flex gap-2 mb-3">
-              {[
-                { label: "🚶 徒歩", range: 2 },
-                { label: "🚲 自転車", range: 3 },
-                { label: "🚃 電車", range: 4 },
-                { label: "🚗 車", range: 5 },
-              ].map((t) => (
+            <p className="text-xs text-gray-500 mb-3 font-medium">どうやって行く？</p>
+            <div className="flex gap-2 mb-4">
+              {([
+                { id: "walk" as const, label: "🚶 徒歩", sub: "近場で" },
+                { id: "bicycle" as const, label: "🚲 自転車", sub: "ちょい遠でも" },
+                { id: "train" as const, label: "🚃 電車", sub: "駅で探す" },
+                { id: "car" as const, label: "🚗 車", sub: "駐車場あり" },
+              ]).map((t) => (
                 <button
-                  key={t.range}
-                  onClick={() => setSearchRange(t.range)}
-                  className={`flex-1 py-2 rounded-xl text-xs font-medium transition-all ${
-                    searchRange === t.range
+                  key={t.id}
+                  onClick={() => selectTransport(t.id)}
+                  className={`flex-1 py-2.5 rounded-xl text-center transition-all ${
+                    transportMode === t.id
                       ? "bg-orange-500 text-white shadow-sm"
-                      : "bg-white border border-gray-200 text-gray-600"
+                      : "bg-white border border-gray-200 text-gray-600 hover:border-orange-300"
                   }`}
                 >
-                  {t.label}
+                  <div className="text-sm font-medium">{t.label}</div>
+                  <div className={`text-[10px] mt-0.5 ${transportMode === t.id ? "text-white/70" : "text-gray-400"}`}>{t.sub}</div>
                 </button>
               ))}
             </div>
-            <button
-              onClick={() => {
-                navigator.geolocation.getCurrentPosition(
-                  (pos) => searchRestaurants(pos.coords.latitude, pos.coords.longitude, searchRange),
-                  () => alert("位置情報の許可が必要です")
-                );
-              }}
-              className="w-full py-3 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
-            >
-              📍 現在地からお店を探す
-            </button>
+
+            {/* 電車モード: 駅名入力 */}
+            {transportMode === "train" ? (
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={stationQuery}
+                    onChange={(e) => setStationQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && searchByStation(stationQuery)}
+                    placeholder="駅名・エリア名を入力"
+                    className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
+                  />
+                  <button
+                    onClick={() => searchByStation(stationQuery)}
+                    disabled={!stationQuery.trim()}
+                    className="px-5 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold shadow-md hover:shadow-lg transition-all active:scale-[0.98] disabled:opacity-40"
+                  >
+                    検索
+                  </button>
+                </div>
+                <p className="text-[10px] text-gray-400 text-center">例: 渋谷、新宿三丁目、池袋東口</p>
+              </div>
+            ) : (
+              /* 徒歩/自転車/車モード: 現在地検索 */
+              <button
+                onClick={() => {
+                  navigator.geolocation.getCurrentPosition(
+                    (pos) => searchRestaurants(pos.coords.latitude, pos.coords.longitude, searchRange),
+                    () => alert("位置情報の許可が必要です")
+                  );
+                }}
+                className="w-full py-3 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
+              >
+                📍 現在地からお店を探す
+              </button>
+            )}
           </div>
 
           {/* Restaurant list */}

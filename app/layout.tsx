@@ -97,8 +97,13 @@ export default function RootLayout({
           }}
         />
         <div className="flex-1">{children}</div>
-        <footer className="py-6 text-center text-sm text-[#8B6F61]/40 bg-[#FFF8F0]">
-          <p>&copy; 2026 こんやのきぶん</p>
+        <footer className="py-8 text-center text-sm text-[#8B6F61]/60 bg-[#FFF8F0]">
+          <nav className="flex flex-wrap justify-center gap-4 mb-3">
+            <a href="/about" className="hover:text-[#FF6B35] transition-colors">このサイトについて</a>
+            <a href="/privacy" className="hover:text-[#FF6B35] transition-colors">プライバシーポリシー</a>
+            <a href="/contact" className="hover:text-[#FF6B35] transition-colors">お問い合わせ</a>
+          </nav>
+          <p className="text-[#8B6F61]/40">&copy; 2026 こんやのきぶん</p>
         </footer>
       </body>
     </html>

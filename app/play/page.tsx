@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
@@ -79,6 +79,8 @@ export default function PlayPage() {
   const [stationQuery, setStationQuery] = useState("");
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  // Skip the chip-driven re-search on initial mount; only re-search when chips actually toggle.
+  const skipChipSearchRef = useRef(true);
 
   // Handle endpoint reached
   useEffect(() => {
@@ -131,6 +133,7 @@ export default function PlayPage() {
     setRestaurants([]);
     setActiveChips([]);
     setUserLocation(null);
+    skipChipSearchRef.current = true;
   }, [reset]);
 
   const searchRestaurants = useCallback(async (lat: number, lng: number, range: number) => {
@@ -166,6 +169,19 @@ export default function PlayPage() {
       setIsSearching(false);
     }
   }, [resolvedEndpoint, activeChips]);
+
+  // Re-search when chips change (avoids stale-closure bug from inline setTimeout)
+  useEffect(() => {
+    if (skipChipSearchRef.current) {
+      skipChipSearchRef.current = false;
+      return;
+    }
+    if (userLocation && resolvedEndpoint) {
+      searchRestaurants(userLocation.lat, userLocation.lng, searchRange);
+    }
+    // intentionally only watch activeChips; other deps would over-trigger
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeChips]);
 
   // 駅名・エリア名でキーワード検索
   const searchByStation = useCallback(async (query: string) => {
@@ -494,12 +510,7 @@ export default function PlayPage() {
                   return (
                     <button
                       key={chip.id}
-                      onClick={() => {
-                        toggleChip(chip);
-                        if (userLocation) {
-                          setTimeout(() => searchRestaurants(userLocation.lat, userLocation.lng, searchRange), 100);
-                        }
-                      }}
+                      onClick={() => toggleChip(chip)}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                         isActive
                           ? "bg-orange-500 text-white shadow-sm"

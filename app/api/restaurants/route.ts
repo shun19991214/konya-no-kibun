@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const HOTPEPPER_API_KEY = process.env.HOTPEPPER_API_KEY || "";
-const BASE_URL = "http://webservice.recruit.co.jp/hotpepper/gourmet/v1/";
+const BASE_URL = "https://webservice.recruit.co.jp/hotpepper/gourmet/v1/";
+const HOTPEPPER_TIMEOUT_MS = 5000;
 
 // v2対応: 予算コード、Q4チップフラグ（private_room, free_drink等）をサポート
 // 5段階フォールバック: keyword→条件→エリア→ジャンルの段階的緩和
@@ -76,7 +77,9 @@ async function searchHotpepper(
   baseParams: URLSearchParams
 ): Promise<{ shops: HotPepperShop[]; total: number } | null> {
   try {
-    const res = await fetch(`${BASE_URL}?${baseParams.toString()}`);
+    const res = await fetch(`${BASE_URL}?${baseParams.toString()}`, {
+      signal: AbortSignal.timeout(HOTPEPPER_TIMEOUT_MS),
+    });
     const data = await res.json();
 
     if (data.results?.error) {
@@ -104,12 +107,12 @@ export async function GET(request: NextRequest) {
   }
 
   const { searchParams } = request.nextUrl;
-  const lat = searchParams.get("lat");
-  const lng = searchParams.get("lng");
+  const latRaw = searchParams.get("lat");
+  const lngRaw = searchParams.get("lng");
   const genre = searchParams.get("genre");
   const keyword = searchParams.get("keyword") || "";
   const budget = searchParams.get("budget") || "";
-  const initialRange = parseInt(searchParams.get("range") || "3", 10);
+  const rangeRaw = searchParams.get("range");
   const count = searchParams.get("count") || "5";
 
   if (!genre && !keyword) {
@@ -117,6 +120,48 @@ export async function GET(request: NextRequest) {
       { error: "genre or keyword is required" },
       { status: 400 }
     );
+  }
+
+  // lat/lng must be provided together, and both must be finite numbers in valid ranges
+  let lat: string | null = null;
+  let lng: string | null = null;
+  if (latRaw !== null || lngRaw !== null) {
+    if (latRaw === null || lngRaw === null) {
+      return NextResponse.json(
+        { error: "lat and lng must be provided together" },
+        { status: 400 }
+      );
+    }
+    const latNum = parseFloat(latRaw);
+    const lngNum = parseFloat(lngRaw);
+    if (
+      !Number.isFinite(latNum) ||
+      !Number.isFinite(lngNum) ||
+      latNum < -90 ||
+      latNum > 90 ||
+      lngNum < -180 ||
+      lngNum > 180
+    ) {
+      return NextResponse.json(
+        { error: "invalid lat/lng" },
+        { status: 400 }
+      );
+    }
+    lat = String(latNum);
+    lng = String(lngNum);
+  }
+
+  // range: optional, integer 1-5, default 3
+  let initialRange = 3;
+  if (rangeRaw !== null) {
+    const r = parseInt(rangeRaw, 10);
+    if (!Number.isFinite(r) || r < 1 || r > 5) {
+      return NextResponse.json(
+        { error: "invalid range (must be integer 1-5)" },
+        { status: 400 }
+      );
+    }
+    initialRange = r;
   }
 
   // フラグパラメータを収集

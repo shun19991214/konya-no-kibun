@@ -724,10 +724,30 @@ export default function PlayPage() {
                 : "https://konya-no-kibun.vercel.app";
             const shareUrl = `${origin}/play?${shareParams.toString()}`;
             const shareText = `きぶんくんに当てられた！\n今夜の気分は「${resolvedEndpoint.resultLabel}」🎯\n${resolvedEndpoint.resultDescription}\n\n#こんやのきぶん #きぶんで夜ごはん`;
+            const ogImageUrl = `/api/og?${shareParams.toString()}`;
+
+            const handleSaveImage = async () => {
+              try {
+                const res = await fetch(ogImageUrl);
+                if (!res.ok) throw new Error("og fetch failed");
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `こんやのきぶん_${resolvedEndpoint.resultLabel}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+              } catch {
+                alert("画像の保存に失敗しました");
+              }
+            };
+
             return (
               <div className="mt-8 text-center">
                 <p className="text-xs text-gray-500 mb-3 font-medium">結果をシェア</p>
-                <div className="flex gap-3 justify-center">
+                <div className="flex gap-3 justify-center flex-wrap">
                   <a
                     href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`}
                     target="_blank"
@@ -749,6 +769,13 @@ export default function PlayPage() {
                   >
                     LINE
                   </a>
+                  <button
+                    onClick={handleSaveImage}
+                    aria-label="結果を画像で保存"
+                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-white border border-gray-200 text-gray-700 text-sm font-medium hover:border-orange-300 hover:shadow-md transition-all hover:scale-105 active:scale-95"
+                  >
+                    📷 画像保存
+                  </button>
                 </div>
               </div>
             );

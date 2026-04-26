@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useQuizState } from "@/hooks/useQuizState";
@@ -82,6 +82,7 @@ export default function PlayPage() {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   // Skip the chip-driven re-search on initial mount; only re-search when chips actually toggle.
   const skipChipSearchRef = useRef(true);
+  const prefersReducedMotion = useReducedMotion();
 
   // Handle endpoint reached
   useEffect(() => {
@@ -102,12 +103,13 @@ export default function PlayPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.endpoint]);
 
-  // Fire confetti shortly after the reveal animation begins (per redesign timeline ~3.5s)
+  // Fire confetti shortly after the reveal animation begins (per redesign timeline ~3.5s).
+  // Skip when the user has requested reduced motion.
   useEffect(() => {
-    if (phase !== "reveal") return;
+    if (phase !== "reveal" || prefersReducedMotion) return;
     const t = setTimeout(() => { void fireRevealConfetti(); }, 1000);
     return () => clearTimeout(t);
-  }, [phase]);
+  }, [phase, prefersReducedMotion]);
 
   // Auto-geolocation on detail phase (not for train mode)
   useEffect(() => {
@@ -264,13 +266,14 @@ export default function PlayPage() {
           <button
             onClick={handleBack}
             disabled={!canGoBack}
+            aria-label="前の質問に戻る"
             className={`flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all ${
               canGoBack
                 ? "text-gray-700 hover:bg-white/60 active:scale-95"
                 : "text-gray-300 cursor-not-allowed"
             }`}
           >
-            <ChevronLeft size={18} />
+            <ChevronLeft size={18} aria-hidden="true" />
             {canGoBack && (
               <span className="text-xs font-medium text-gray-500">戻る</span>
             )}
@@ -282,10 +285,18 @@ export default function PlayPage() {
         </header>
 
         {/* Progress dots — fixed 4 steps, unified orange color */}
-        <div className="flex justify-center gap-1.5 py-2">
+        <div
+          className="flex justify-center gap-1.5 py-2"
+          role="progressbar"
+          aria-label="診断の進捗"
+          aria-valuenow={questionDepth}
+          aria-valuemin={1}
+          aria-valuemax={4}
+        >
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
+              aria-hidden="true"
               className={`h-2 rounded-full transition-all duration-500 ${
                 i < questionDepth
                   ? "w-6 bg-orange-400 opacity-80"
@@ -519,6 +530,7 @@ export default function PlayPage() {
                     <button
                       key={chip.id}
                       onClick={() => toggleChip(chip)}
+                      aria-pressed={isActive}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                         isActive
                           ? "bg-orange-500 text-white shadow-sm"
@@ -704,9 +716,10 @@ export default function PlayPage() {
                 href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`きぶんくんに当てられた！\n今夜の気分は「${resolvedEndpoint.resultLabel}」🎯\n${resolvedEndpoint.resultDescription}\n\n#こんやのきぶん #きぶんで夜ごはん`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="X(旧Twitter)で結果をシェア"
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-black text-white text-sm font-medium hover:bg-gray-800 transition-all hover:scale-105 active:scale-95"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                 </svg>
                 X
@@ -715,6 +728,7 @@ export default function PlayPage() {
                 href={`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="LINEで結果をシェア"
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#06C755] text-white text-sm font-medium hover:bg-[#05b34d] transition-all hover:scale-105 active:scale-95"
               >
                 LINE

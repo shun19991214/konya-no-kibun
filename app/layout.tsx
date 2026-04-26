@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { MotionProvider } from "@/components/common/MotionProvider";
 
 export const metadata: Metadata = {
   icons: {
@@ -96,7 +97,9 @@ export default function RootLayout({
             }),
           }}
         />
-        <div className="flex-1">{children}</div>
+        <MotionProvider>
+          <div className="flex-1">{children}</div>
+        </MotionProvider>
         <footer className="py-8 text-center text-sm text-[#8B6F61]/60 bg-[#FFF8F0]">
           <nav className="flex flex-wrap justify-center gap-4 mb-3">
             <a href="/about" className="hover:text-[#FF6B35] transition-colors">このサイトについて</a>

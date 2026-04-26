@@ -9,6 +9,7 @@ import { KibunKun } from "@/components/character/KibunKun";
 import { GENRE_MAP } from "@/data/genres";
 import { QUESTION_TREE } from "@/data/questionTree";
 import { resolveRandomGenre } from "@/lib/randomGenre";
+import { fireRevealConfetti } from "@/lib/confetti";
 import { Q4_CHIPS } from "@/data/q4chips";
 import type { EndpointNode, OptionNode, Restaurant, Q4Chip } from "@/types";
 
@@ -100,6 +101,13 @@ export default function PlayPage() {
     return () => { clearTimeout(t1); clearTimeout(t2); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.endpoint]);
+
+  // Fire confetti shortly after the reveal animation begins (per redesign timeline ~3.5s)
+  useEffect(() => {
+    if (phase !== "reveal") return;
+    const t = setTimeout(() => { void fireRevealConfetti(); }, 1000);
+    return () => clearTimeout(t);
+  }, [phase]);
 
   // Auto-geolocation on detail phase (not for train mode)
   useEffect(() => {
